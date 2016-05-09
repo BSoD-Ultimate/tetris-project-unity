@@ -103,30 +103,6 @@ public class GameManager : MonoBehaviour
     // a wrapper controls block's animation
     class BlockAnimation
     {
-        public static void SetUnfixed(ref GameObject[] blocks)
-        {
-            for (int i = 0; i < blocks.Length; i++)
-            {
-                blocks[i].GetComponent<Animator>().SetBool("TouchGround", false);
-            }
-        }
-        public static void SetFixing(ref GameObject[] blocks)
-        {
-            for (int i = 0; i < blocks.Length; i++)
-            {
-                //if(!blocks[i].GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("red_block_fixing"))
-                //{
-                    blocks[i].GetComponent<Animator>().SetBool("TouchGround", true);
-               // }
-            }
-        }
-        public static void ResetFixing(ref GameObject[] blocks)
-        {
-            for (int i = 0; i < blocks.Length; i++)
-            {
-                blocks[i].GetComponent<Animator>().SetTrigger("CountdownReset");
-            }
-        }
         public static void SetFixed(ref GameObject[] blocks)
         {
             for (int i = 0; i < blocks.Length; i++)
@@ -322,12 +298,10 @@ public class GameManager : MonoBehaviour
                 coWaitPieceFix.Stop();
                 coWaitPieceFix.Reset();
                 coWaitPieceFix.Start(PieceLockDelay);
-                // reset the animation
-                BlockAnimation.ResetFixing(ref m_BlockCurrentPiece);
             }
             if (m_CurrentPiece.TryMoveDown())
             {
-                BlockAnimation.SetUnfixed(ref m_BlockCurrentPiece);
+                // TODO: update fix countdown scrollbar?
             }
         }
     }
@@ -375,6 +349,13 @@ public class GameManager : MonoBehaviour
             // stop the countdown timer
             coWaitPieceFix.Stop();
             coWaitPieceFix.Reset();
+
+            // apply piece to the field.
+            Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
+            for (int i = 0; i < m_BlockCurrentPiece.Length; i++)
+            {
+                m_BlockView[blockPos[i].y, blockPos[i].x] = m_BlockCurrentPiece[i];
+            }
 
             return true;
         }
@@ -486,8 +467,6 @@ public class GameManager : MonoBehaviour
             {
                 if (m_CurrentPiece.CurrentState == Piece.State.Fixing)
                 {
-                    // update animation
-                    BlockAnimation.SetFixing(ref m_BlockCurrentPiece);
 
                     if (!coWaitPieceFix.IsRunning && !coWaitPieceFix.IsCompleted)
                     {
@@ -509,39 +488,56 @@ public class GameManager : MonoBehaviour
                         {
                             m_BlockView[blockPos[i].y, blockPos[i].x] = m_BlockCurrentPiece[i];
                         }
-
-                        // check if related lines can be cleared
-                        bool isLineCleared = false;
-                        foreach (Point point in blockPos)
-                        {
-                            if (m_Field.CheckRow(point.y))
-                            {
-                                isLineCleared = true;
-                                m_Field.ClearRow(point.y);
-                                // destroy the corresponding lines on the screen
-                                for (int i = 0; i < m_Field.Width; i++)
-                                {
-                                    Destroy(m_BlockView[point.y, i]);
-                                    m_BlockView[point.y, i] = null;
-                                }
-                            }
-                        }
-                        // arrange the field
-                        if (isLineCleared)
-                        {
-                            yield return new WaitForSeconds(LineClearDelay);
-                            UpdateField();
-                        }
-
-
                     }
                 }
-
                 yield return null;
+            }
+            // now the piece is fixed, we check if related rows can be cleared
+            bool isLineCleared = CheckRowClear();
+            // arrange the field
+            if (isLineCleared)
+            {
+                yield return new WaitForSeconds(LineClearDelay);
+                UpdateField();
             }
 
             yield return null;
         }
+    }
+
+    private bool CheckRowClear()
+    {
+        bool isRowCleared = false;
+        Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
+        List<int> rowID=new List<int>();
+        foreach(Point point in blockPos)
+        {
+            if(!rowID.Contains(point.y))
+            {
+                rowID.Add(point.y);
+            }
+        }
+        // check related rows can be cleared
+        foreach (int row in rowID)
+        {
+            if (m_Field.CheckRow(row))
+            {
+                isRowCleared = true;
+                m_Field.ClearRow(row);
+                // destroy the corresponding lines on the screen
+                for (int i = 0; i < m_Field.Width; i++)
+                {
+                    Destroy(m_BlockView[row, i]);
+                    m_BlockView[row, i] = null;
+                }
+            }
+        }
+        // row cleared
+        if (isRowCleared)
+        {
+            m_Field.CollapseRows();
+        }
+        return isRowCleared;
     }
 
     // handle drop of the piece

@@ -21,7 +21,7 @@ public class InputManager : MonoBehaviour
     public float AutoShiftSpeed { get; set; }
     public float SoftDropSpeed { get; set; }
 
-    private bool isDoingMove = false;
+    private bool isHandlingInput = false;
 
     private Coroutine coHandleInputs;
 
@@ -129,7 +129,6 @@ public class InputManager : MonoBehaviour
             GameManager.instance.DoMoveLeft();
             yield return new WaitForSeconds(AutoShiftSpeed);
         }
-        isDoingMove = false;
         yield return null;
     }
     IEnumerator HandleRightMoveInput()
@@ -179,16 +178,60 @@ public class InputManager : MonoBehaviour
     public void StartHandleInput()
     {
         // start coroutines which handle input operations
-        coHandleInputs = StartCoroutine(HandleInputs());
+        //coHandleInputs = StartCoroutine(HandleInputs());
+        isHandlingInput = true;
     }
     public void StopHandleInput()
     {
-        StopCoroutine(coHandleInputs);
+        //StopCoroutine(coHandleInputs);
+        isHandlingInput = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(isHandlingInput)
+        {
+            if (Input.GetKeyDown(m_keyBindings.keyLeftMove))
+            {
+                StartCoroutine(HandleLeftMoveInput());
+            }
+            if (Input.GetKeyDown(m_keyBindings.keyRightMove))
+            {
+                StartCoroutine(HandleRightMoveInput());
+            }
+            if (Input.GetKeyDown(m_keyBindings.keySoftDrop))
+            {
 
+            }
+            if (Input.GetKeyDown(m_keyBindings.keyHardDrop))
+            {
+                GameManager.instance.DoHardDrop();
+            }
+            if (Input.GetKeyDown(m_keyBindings.keyRotateCW))
+            {
+                //Debug.Log("RotateCW performed");
+                GameManager.instance.DoRotateCW();
+            }
+            if (Input.GetKeyDown(m_keyBindings.keyRotateCCW))
+            {
+                //Debug.Log("RotateCCW performed");
+                GameManager.instance.DoRotateCCW();
+            }
+            if (Input.GetKeyDown(m_keyBindings.keyHold))
+            {
+                Debug.Log("Hold performed");
+            }
+
+            // initial rotation & hold
+            if (Input.GetKey(m_keyBindings.keyRotateCW) && !GameManager.instance.IsPieceSpawned)
+            {
+                GameManager.instance.DoRotateCW();
+            }
+            if (Input.GetKey(m_keyBindings.keyRotateCCW) && !GameManager.instance.IsPieceSpawned)
+            {
+                GameManager.instance.DoRotateCCW();
+            }
+        }
     }
 }

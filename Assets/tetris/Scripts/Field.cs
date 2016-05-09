@@ -100,7 +100,7 @@ namespace TetrisEngine
         /// <returns>Returns true if succeed, false if failed</returns>
         public bool ClearRow(int row)
         {
-            if(row <0|| row>=m_Height)
+            if (row < 0 || row >= m_Height)
             {
                 return false;
             }
@@ -109,12 +109,35 @@ namespace TetrisEngine
             {
                 m_field[row, i] = null;
             }
-            // move down the upper block
-            for (int rowID = row; rowID < m_Height - 1; rowID++)
+
+            return true;
+        }
+        private bool IsRowEmpty(int row)
+        {
+            for (int i = 0; i < m_Width; i++)
             {
-                for (int i = 0; i < Width; i++)
+                if (m_field[row, i] != null)
                 {
-                    m_field[rowID, i] = m_field[rowID + 1, i];
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool CollapseRows()
+        {
+            // find empty rows from top to bottom
+            for (int row = m_Height-2; row >=0; row--)
+            {
+                if(IsRowEmpty(row))
+                {
+                    // move down upper blocks
+                    for (int rowID = row; rowID < m_Height - 1; rowID++)
+                    {
+                        for (int i = 0; i < Width; i++)
+                        {
+                            m_field[rowID, i] = m_field[rowID + 1, i];
+                        }
+                    }
                 }
             }
             return true;
