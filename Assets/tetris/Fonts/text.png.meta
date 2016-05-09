@@ -1,0 +1,273 @@
+fileFormatVersion: 2
+guid: 3f68fb2ca02660a43b05b003abf35aaf
+timeCreated: 1462088699
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: text_hold_small
+    21300002: text_next_small
+    21300004: text_time_small
+    21300006: text_level_small
+    21300008: text_selectdata_small
+    21300010: text_selectmode_small
+    21300012: text_6
+    21300014: text_7
+    21300016: text_8
+    21300018: text_9
+    21300020: text_10
+    21300022: text_11
+    21300024: text_12
+    21300026: text_13
+    21300028: text_14
+    21300030: text_15
+    21300032: text_16
+    21300034: text_17
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: 0
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 16
+  alphaIsTransparency: 1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    sprites:
+    - name: text_hold_small
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 349
+        width: 49
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_next_small
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 337
+        width: 49
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_time_small
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 325
+        width: 45
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_level_small
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 313
+        width: 62
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_selectdata_small
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 301
+        width: 136
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_selectmode_small
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 289
+        width: 136
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_6
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 266
+        width: 72
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_7
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 248
+        width: 72
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_8
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 230
+        width: 66
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_9
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 212
+        width: 91
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_10
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 194
+        width: 199
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_11
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 176
+        width: 199
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_12
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 147
+        width: 95
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_13
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 123
+        width: 95
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_14
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 99
+        width: 87
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_15
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 75
+        width: 120
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_16
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 51
+        width: 262
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    - name: text_17
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 27
+        width: 262
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
