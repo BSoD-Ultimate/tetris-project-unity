@@ -202,7 +202,7 @@ public class GameManager : MonoBehaviour
         m_Field = new Field();
 
         // randomizer
-        m_Randomizer = new TestRandomizer();
+        m_Randomizer = new History4RollsRandomizer();
         // fill the incoming piece queue.
         m_IncomingPieceQueue = new Queue<Piece>();
         for (int i = 0; i < 6; i++)
@@ -371,6 +371,7 @@ public class GameManager : MonoBehaviour
             m_CurrentPiece.HardDrop();
             UpdatePiecePosition();
             BlockAnimation.SetFixed(ref m_BlockCurrentPiece);
+            StopCoroutine(m_coPieceDrop);
             // stop the countdown timer
             coWaitPieceFix.Stop();
             coWaitPieceFix.Reset();
@@ -434,8 +435,17 @@ public class GameManager : MonoBehaviour
         }
         else // normal rotation
         {
-
-            return true;
+            if (m_CurrentPiece.CurrentState != Piece.State.Fixed)
+            {
+                bool success = m_CurrentPiece.RotateCCW();
+                if (success)
+                {
+                    UpdatePiecePosition();
+                    CheckPieceState();
+                }
+                return success;
+            }
+            return false;
         }
     }
     //public bool DoHoldPiece()
@@ -547,9 +557,8 @@ public class GameManager : MonoBehaviour
                 // update to screen 
                 UpdatePiecePosition();
 
-                yield return new WaitForSeconds(PieceDropInterval);
             }
-            yield return null;
+            yield return new WaitForSeconds(PieceDropInterval);
         }
     }
 

@@ -23,11 +23,6 @@ public class InputManager : MonoBehaviour
 
     private bool isDoingMove = false;
 
-    private Coroutine coLeftMove;
-    private Coroutine coRightMove;
-    private Coroutine coSoftDrop;
-    private Coroutine coHardDrop;
-    private Coroutine coOtherInputs;
     private Coroutine coHandleInputs;
 
     #region Game Controls
@@ -87,6 +82,14 @@ public class InputManager : MonoBehaviour
             {
                 StartCoroutine(HandleRightMoveInput());
             }
+            if(Input.GetKeyDown(m_keyBindings.keySoftDrop))
+            {
+
+            }
+            if(Input.GetKeyDown(m_keyBindings.keyHardDrop))
+            {
+                GameManager.instance.DoHardDrop();
+            }
             if (Input.GetKeyDown(m_keyBindings.keyRotateCW))
             {
                 //Debug.Log("RotateCW performed");
@@ -95,6 +98,7 @@ public class InputManager : MonoBehaviour
             if (Input.GetKeyDown(m_keyBindings.keyRotateCCW))
             {
                 Debug.Log("RotateCCW performed");
+                GameManager.instance.DoRotateCCW();
             }
             if (Input.GetKeyDown(m_keyBindings.keyHold))
             {
@@ -143,30 +147,13 @@ public class InputManager : MonoBehaviour
     }
     IEnumerator HandleSoftDropInput()
     {
-        while (true)
+        Debug.Log("Soft Drop performed");
+        while (Input.GetKey(m_keyBindings.keySoftDrop))
         {
-            if (/*!isDoingMove &&*/ Input.GetKeyDown(m_keyBindings.keySoftDrop))
-            {
-                Debug.Log("Soft Drop performed");
-                while (Input.GetKey(m_keyBindings.keySoftDrop))
-                {
-                    yield return new WaitForSeconds(SoftDropSpeed);
-                    Debug.Log("Soft Drop performed by DAS");
-                }
-            }
-            yield return null;
+            yield return new WaitForSeconds(SoftDropSpeed);
+            Debug.Log("Soft Drop performed by DAS");
         }
-    }
-    IEnumerator HandleHardDropInput()
-    {
-        while (true)
-        {
-            if (Input.GetKeyDown(m_keyBindings.keyHardDrop))
-            {
-                Debug.Log("Hard Drop performed");
-            }
-            yield return null;
-        }
+        yield return null;
     }
     IEnumerator HandleOtherInputs()
     {

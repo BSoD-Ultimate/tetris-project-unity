@@ -310,7 +310,7 @@ namespace TetrisEngine
         }
         public virtual bool RotateCCW()
         {
-            Shape newShape = (Shape)((int)(CurrentShape - 1) % 4);
+            Shape newShape = (Shape)((int)(CurrentShape + 3) % 4);
 
             Point[] rotationData = m_RotationData[CurrentShape][newShape];
             Point[] wallkickData = m_WallkickTestOffset[CurrentShape][newShape];
@@ -391,6 +391,113 @@ namespace TetrisEngine
 
 
     /// <summary>
+    /// I Piece
+    /// Block Position :
+    /// Zero:           Right:          Inverse:        Left:
+    /// ---------       ---------       ---------       ---------
+    /// |       |       |    0  |       |       |       |  3    |
+    /// |0 1 2 3|       |    1  |       |       |       |  2    |
+    /// |       |       |    2  |       |3 2 1 0|       |  1    |
+    /// |       |       |    3  |       |       |       |  0    |
+    /// ---------       ---------       ---------       ---------
+    /// </summary>
+    class IPiece : Piece
+    {
+        public IPiece(Field bindingField)
+            : base(bindingField)
+        {
+            m_blockType = BlockType.Cyan;
+            SetSpawnPos();
+            SetRotationData();
+            SetWallKickData();
+        }
+        // set the piece's initial state and location.
+        protected override void SetSpawnPos()
+        {
+            m_BlockPos = new Point[4];
+            int hCenter = (m_BindingField.Width + 1) / 2 - 1;// center of a row in the field
+            int top = m_BindingField.Height - 3; // top line of the field
+            m_BlockPos[0] = new Point(hCenter - 1, top);
+            m_BlockPos[1] = new Point(hCenter, top);
+            m_BlockPos[2] = new Point(hCenter + 1, top);
+            m_BlockPos[3] = new Point(hCenter + 2, top);
+        }
+        /// <summary>
+        /// Zero:           Right:          Inverse:        Left:           Zero:
+        /// ---------       ---------       ---------       ---------       ---------
+        /// |       |       |    0  |       |       |       |  3    |       |       |
+        /// |0 1 2 3|       |    1  |       |       |       |  2    |       |0 1 2 3|
+        /// |       |       |    2  |       |3 2 1 0|       |  1    |       |       |
+        /// |       |       |    3  |       |       |       |  0    |       |       |
+        /// ---------       ---------       ---------       ---------       ---------
+        /// </summary>
+        protected override void SetRotationData()
+        {
+            // rotation data
+            Point[] ZeroToRight = { new Point(2, 1), new Point(1, 0), new Point(0, -1), new Point(-1, -2) };
+            Point[] RightToZero = { new Point(-2, -1), new Point(-1, 0), new Point(0, 1), new Point(1, 2) };
+            Point[] RightToInverse = { new Point(1, -2), new Point(0, -1), new Point(-1, 0), new Point(-2, 1) };
+            Point[] InverseToRight = { new Point(-1, 2), new Point(0, 1), new Point(1, 0), new Point(2, -1) };
+            Point[] InverseToLeft = { new Point(-2, -1), new Point(-1, 0), new Point(0, 1), new Point(1, 2) };
+            Point[] LeftToInverse = { new Point(2, 1), new Point(1, 0), new Point(0, -1), new Point(-1, -2) };
+            Point[] LeftToZero = { new Point(-1, 2), new Point(0, 1), new Point(1, 0), new Point(2, -1) };
+            Point[] ZeroToLeft = { new Point(1, -2), new Point(0, -1), new Point(-1, 0), new Point(-2, 1) };
+
+            Dictionary<Shape, Point[]> ZeroTransform = new Dictionary<Shape, Point[]>();
+            ZeroTransform.Add(Shape.Right, ZeroToRight);
+            ZeroTransform.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightTransform = new Dictionary<Shape, Point[]>();
+            RightTransform.Add(Shape.Zero, RightToZero);
+            RightTransform.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseTransform = new Dictionary<Shape, Point[]>();
+            InverseTransform.Add(Shape.Right, InverseToRight);
+            InverseTransform.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftTransform = new Dictionary<Shape, Point[]>();
+            LeftTransform.Add(Shape.Zero, LeftToZero);
+            LeftTransform.Add(Shape.Inverse, LeftToInverse);
+
+            m_RotationData.Add(Shape.Zero, ZeroTransform);
+            m_RotationData.Add(Shape.Right, RightTransform);
+            m_RotationData.Add(Shape.Inverse, InverseTransform);
+            m_RotationData.Add(Shape.Left, LeftTransform);
+
+        }
+        protected override void SetWallKickData()
+        {
+            // wall kick data
+            // Arika I piece wall kick data
+            Point[] ZeroToRight = { new Point(-2, 0), new Point(1, 0), new Point(1, 2), new Point(-2, -1) };
+            Point[] ZeroToLeft = { new Point(2, 0), new Point(-1, 0), new Point(-1, 2), new Point(2, -1) };
+            Point[] InverseToRight = { new Point(-2, 0), new Point(1, 0), new Point(-2, 1), new Point(1, -1) };
+            Point[] InverseToLeft = { new Point(2, 0), new Point(-1, 0), new Point(2, 1), new Point(-1, -1) };
+            Point[] RightToZero = { new Point(2, 0), new Point(-1, 0), new Point(2, 1), new Point(-1, -2) };
+            Point[] LeftToZero = { new Point(-2, 0), new Point(1, 0), new Point(-2, 1), new Point(1, -2) };
+            Point[] RightToInverse = { new Point(-1, 0), new Point(2, 0), new Point(-1, 2), new Point(2, -1) };
+            Point[] LeftToInverse = { new Point(1, 0), new Point(-2, 0), new Point(1, 2), new Point(-2, -1) };
+
+
+
+            Dictionary<Shape, Point[]> ZeroOffset = new Dictionary<Shape, Point[]>();
+            ZeroOffset.Add(Shape.Right, ZeroToRight);
+            ZeroOffset.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightOffset = new Dictionary<Shape, Point[]>();
+            RightOffset.Add(Shape.Zero, RightToZero);
+            RightOffset.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseOffset = new Dictionary<Shape, Point[]>();
+            InverseOffset.Add(Shape.Right, InverseToRight);
+            InverseOffset.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftOffset = new Dictionary<Shape, Point[]>();
+            LeftOffset.Add(Shape.Zero, LeftToZero);
+            LeftOffset.Add(Shape.Inverse, LeftToInverse);
+
+            m_WallkickTestOffset.Add(Shape.Zero, ZeroOffset);
+            m_WallkickTestOffset.Add(Shape.Right, RightOffset);
+            m_WallkickTestOffset.Add(Shape.Inverse, InverseOffset);
+            m_WallkickTestOffset.Add(Shape.Left, LeftOffset);
+        }
+    }
+
+    /// <summary>
     /// J Piece
     /// Block Position :
     /// Zero:           Right:          Inverse:        Left:
@@ -405,7 +512,7 @@ namespace TetrisEngine
         public JPiece(Field bindingField)
             : base(bindingField)
         {
-            m_blockType = BlockType.Orange;
+            m_blockType = BlockType.Blue;
             SetSpawnPos();
             SetRotationData();
             SetWallKickData();
@@ -419,7 +526,7 @@ namespace TetrisEngine
             m_BlockPos[0] = new Point(hCenter - 1, top - 1);
             m_BlockPos[1] = new Point(hCenter, top - 1);
             m_BlockPos[2] = new Point(hCenter + 1, top - 1);
-            m_BlockPos[3] = new Point(hCenter - 1, top + 1);
+            m_BlockPos[3] = new Point(hCenter - 1, top);
         }
         /// <summary>
         /// Zero:           Right:          Inverse:        Left:           Zero:
@@ -542,6 +649,364 @@ namespace TetrisEngine
             Point[] LeftToInverse = { new Point(1, 1), new Point(0, 0), new Point(-1, -1), new Point(0, -2) };
             Point[] LeftToZero = { new Point(-1, 1), new Point(0, 0), new Point(1, -1), new Point(2, 0) };
             Point[] ZeroToLeft = { new Point(1, -1), new Point(0, 0), new Point(-1, 1), new Point(-2, 0) };
+
+            Dictionary<Shape, Point[]> ZeroTransform = new Dictionary<Shape, Point[]>();
+            ZeroTransform.Add(Shape.Right, ZeroToRight);
+            ZeroTransform.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightTransform = new Dictionary<Shape, Point[]>();
+            RightTransform.Add(Shape.Zero, RightToZero);
+            RightTransform.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseTransform = new Dictionary<Shape, Point[]>();
+            InverseTransform.Add(Shape.Right, InverseToRight);
+            InverseTransform.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftTransform = new Dictionary<Shape, Point[]>();
+            LeftTransform.Add(Shape.Zero, LeftToZero);
+            LeftTransform.Add(Shape.Inverse, LeftToInverse);
+
+            m_RotationData.Add(Shape.Zero, ZeroTransform);
+            m_RotationData.Add(Shape.Right, RightTransform);
+            m_RotationData.Add(Shape.Inverse, InverseTransform);
+            m_RotationData.Add(Shape.Left, LeftTransform);
+
+        }
+        protected override void SetWallKickData()
+        {
+            // wall kick data
+            Point[] ZeroToRight = { new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) };
+            Point[] RightToZero = { new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) };
+            Point[] RightToInverse = { new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) };
+            Point[] InverseToRight = { new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) };
+            Point[] InverseToLeft = { new Point(1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) };
+            Point[] LeftToInverse = { new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) };
+            Point[] LeftToZero = { new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) };
+            Point[] ZeroToLeft = { new Point(-1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) };
+
+            Dictionary<Shape, Point[]> ZeroOffset = new Dictionary<Shape, Point[]>();
+            ZeroOffset.Add(Shape.Right, ZeroToRight);
+            ZeroOffset.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightOffset = new Dictionary<Shape, Point[]>();
+            RightOffset.Add(Shape.Zero, RightToZero);
+            RightOffset.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseOffset = new Dictionary<Shape, Point[]>();
+            InverseOffset.Add(Shape.Right, InverseToRight);
+            InverseOffset.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftOffset = new Dictionary<Shape, Point[]>();
+            LeftOffset.Add(Shape.Zero, LeftToZero);
+            LeftOffset.Add(Shape.Inverse, LeftToInverse);
+
+            m_WallkickTestOffset.Add(Shape.Zero, ZeroOffset);
+            m_WallkickTestOffset.Add(Shape.Right, RightOffset);
+            m_WallkickTestOffset.Add(Shape.Inverse, InverseOffset);
+            m_WallkickTestOffset.Add(Shape.Left, LeftOffset);
+        }
+    }
+
+    /// <summary>
+    /// O Piece
+    /// Block Position : 
+    /// Zero:   
+    /// --------- 
+    /// |  0 1  | 
+    /// |  3 2  | 
+    /// |       |  
+    /// --------- 
+    /// </summary>
+    class OPiece : Piece
+    {
+        public OPiece(Field bindingField)
+            : base(bindingField)
+        {
+            m_blockType = BlockType.Yellow;
+            SetSpawnPos();
+            SetRotationData();
+            SetWallKickData();
+        }
+        // set the piece's initial state and location.
+        protected override void SetSpawnPos()
+        {
+            m_BlockPos = new Point[4];
+            int hCenter = (m_BindingField.Width + 1) / 2 - 1;// center of a row in the field
+            int top = m_BindingField.Height - 3; // top line of the field
+            m_BlockPos[0] = new Point(hCenter, top);
+            m_BlockPos[1] = new Point(hCenter + 1, top);
+            m_BlockPos[2] = new Point(hCenter + 1, top - 1);
+            m_BlockPos[3] = new Point(hCenter, top - 1);
+        }
+        /// <summary>
+        /// No rotation
+        /// </summary>
+        protected override void SetRotationData()
+        {
+
+        }
+        protected override void SetWallKickData()
+        {
+
+        }
+        public override bool RotateCW()
+        {
+            return false;
+        }
+        public override bool RotateCCW()
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// S Piece
+    /// Block Position :
+    /// Zero:           Right:          Inverse:        Left:
+    /// -------         -------         -------         -------
+    /// |  2 3|         |  0  |         |     |         |3    |
+    /// |0 1  |         |  1 2|         |  1 0|         |2 1  |
+    /// |     |         |    3|         |3 2  |         |  0  |
+    /// -------         -------         -------         -------
+    /// </summary>
+    class SPiece : Piece
+    {
+        public SPiece(Field bindingField)
+            : base(bindingField)
+        {
+            m_blockType = BlockType.Green;
+            SetSpawnPos();
+            SetRotationData();
+            SetWallKickData();
+        }
+        // set the piece's initial state and location.
+        protected override void SetSpawnPos()
+        {
+            m_BlockPos = new Point[4];
+            int hCenter = (m_BindingField.Width + 1) / 2 - 1;// center of a row in the field
+            int top = m_BindingField.Height - 3; // top line of the field
+            m_BlockPos[0] = new Point(hCenter - 1, top - 1);
+            m_BlockPos[1] = new Point(hCenter, top - 1);
+            m_BlockPos[2] = new Point(hCenter, top);
+            m_BlockPos[3] = new Point(hCenter + 1, top);
+        }
+        /// <summary>
+        /// Zero:           Right:          Inverse:        Left:           Zero:
+        /// -------         -------         -------         -------         -------
+        /// |  2 3|         |  0  |         |     |         |3    |         |  2 3|
+        /// |0 1  |         |  1 2|         |  1 0|         |2 1  |         |0 1  |
+        /// |     |         |    3|         |3 2  |         |  0  |         |     |
+        /// -------         -------         -------         -------         -------
+        /// </summary>
+        protected override void SetRotationData()
+        {
+            // rotation data
+            Point[] ZeroToRight = { new Point(1, 1), new Point(0, 0), new Point(1, -1), new Point(0, -2) };
+            Point[] RightToZero = { new Point(-1, -1), new Point(0, 0), new Point(-1, 1), new Point(0, 2) };
+            Point[] RightToInverse = { new Point(1, -1), new Point(0, 0), new Point(-1, -1), new Point(-2, 0) };
+            Point[] InverseToRight = { new Point(-1, 1), new Point(0, 0), new Point(1, 1), new Point(2, 0) };
+            Point[] InverseToLeft = { new Point(-1, -1), new Point(0, 0), new Point(-1, 1), new Point(0, 2) };
+            Point[] LeftToInverse = { new Point(1, 1), new Point(0, 0), new Point(1, -1), new Point(0, -2) };
+            Point[] LeftToZero = { new Point(-1, 1), new Point(0, 0), new Point(1, 1), new Point(2, 0) };
+            Point[] ZeroToLeft = { new Point(1, -1), new Point(0, 0), new Point(-1, -1), new Point(-2, 0) };
+
+            Dictionary<Shape, Point[]> ZeroTransform = new Dictionary<Shape, Point[]>();
+            ZeroTransform.Add(Shape.Right, ZeroToRight);
+            ZeroTransform.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightTransform = new Dictionary<Shape, Point[]>();
+            RightTransform.Add(Shape.Zero, RightToZero);
+            RightTransform.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseTransform = new Dictionary<Shape, Point[]>();
+            InverseTransform.Add(Shape.Right, InverseToRight);
+            InverseTransform.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftTransform = new Dictionary<Shape, Point[]>();
+            LeftTransform.Add(Shape.Zero, LeftToZero);
+            LeftTransform.Add(Shape.Inverse, LeftToInverse);
+
+            m_RotationData.Add(Shape.Zero, ZeroTransform);
+            m_RotationData.Add(Shape.Right, RightTransform);
+            m_RotationData.Add(Shape.Inverse, InverseTransform);
+            m_RotationData.Add(Shape.Left, LeftTransform);
+
+        }
+        protected override void SetWallKickData()
+        {
+            // wall kick data
+            Point[] ZeroToRight = { new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) };
+            Point[] RightToZero = { new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) };
+            Point[] RightToInverse = { new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) };
+            Point[] InverseToRight = { new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) };
+            Point[] InverseToLeft = { new Point(1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) };
+            Point[] LeftToInverse = { new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) };
+            Point[] LeftToZero = { new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) };
+            Point[] ZeroToLeft = { new Point(-1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) };
+
+            Dictionary<Shape, Point[]> ZeroOffset = new Dictionary<Shape, Point[]>();
+            ZeroOffset.Add(Shape.Right, ZeroToRight);
+            ZeroOffset.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightOffset = new Dictionary<Shape, Point[]>();
+            RightOffset.Add(Shape.Zero, RightToZero);
+            RightOffset.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseOffset = new Dictionary<Shape, Point[]>();
+            InverseOffset.Add(Shape.Right, InverseToRight);
+            InverseOffset.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftOffset = new Dictionary<Shape, Point[]>();
+            LeftOffset.Add(Shape.Zero, LeftToZero);
+            LeftOffset.Add(Shape.Inverse, LeftToInverse);
+
+            m_WallkickTestOffset.Add(Shape.Zero, ZeroOffset);
+            m_WallkickTestOffset.Add(Shape.Right, RightOffset);
+            m_WallkickTestOffset.Add(Shape.Inverse, InverseOffset);
+            m_WallkickTestOffset.Add(Shape.Left, LeftOffset);
+        }
+    }
+
+    /// <summary>
+    /// T Piece
+    /// Block Position :
+    /// Zero:           Right:          Inverse:        Left:
+    /// -------         -------         -------         -------
+    /// |  3  |         |  0  |         |     |         |  2  |
+    /// |0 1 2|         |  1 3|         |2 1 0|         |3 1  |
+    /// |     |         |  2  |         |  3  |         |  0  |
+    /// -------         -------         -------         -------
+    /// </summary>
+    class TPiece : Piece
+    {
+        public TPiece(Field bindingField)
+            : base(bindingField)
+        {
+            m_blockType = BlockType.Purple;
+            SetSpawnPos();
+            SetRotationData();
+            SetWallKickData();
+        }
+        // set the piece's initial state and location.
+        protected override void SetSpawnPos()
+        {
+            m_BlockPos = new Point[4];
+            int hCenter = (m_BindingField.Width + 1) / 2 - 1;// center of a row in the field
+            int top = m_BindingField.Height - 3; // top line of the field
+            m_BlockPos[0] = new Point(hCenter - 1, top - 1);
+            m_BlockPos[1] = new Point(hCenter, top - 1);
+            m_BlockPos[2] = new Point(hCenter + 1, top - 1);
+            m_BlockPos[3] = new Point(hCenter, top);
+        }
+        /// <summary>
+        /// Zero:           Right:          Inverse:        Left:           Zero:
+        /// -------         -------         -------         -------         -------
+        /// |  3  |         |  0  |         |     |         |  2  |         |  3  |
+        /// |0 1 2|         |  1 3|         |2 1 0|         |3 1  |         |0 1 2|
+        /// |     |         |  2  |         |  3  |         |  0  |         |     |
+        /// -------         -------         -------         -------         -------
+        /// </summary>
+        protected override void SetRotationData()
+        {
+            // rotation data
+            Point[] ZeroToRight = { new Point(1, 1), new Point(0, 0), new Point(-1, -1), new Point(1, -1) };
+            Point[] RightToZero = { new Point(-1, -1), new Point(0, 0), new Point(1, 1), new Point(-1, 1) };
+            Point[] RightToInverse = { new Point(1, -1), new Point(0, 0), new Point(-1, 1), new Point(-1, -1) };
+            Point[] InverseToRight = { new Point(-1, 1), new Point(0, 0), new Point(1, -1), new Point(1, 1) };
+            Point[] InverseToLeft = { new Point(-1, -1), new Point(0, 0), new Point(1, 1), new Point(-1, 1) };
+            Point[] LeftToInverse = { new Point(1, 1), new Point(0, 0), new Point(-1, -1), new Point(1, -1) };
+            Point[] LeftToZero = { new Point(-1, 1), new Point(0, 0), new Point(1, -1), new Point(1, 1) };
+            Point[] ZeroToLeft = { new Point(1, -1), new Point(0, 0), new Point(-1, 1), new Point(-1, -1) };
+
+            Dictionary<Shape, Point[]> ZeroTransform = new Dictionary<Shape, Point[]>();
+            ZeroTransform.Add(Shape.Right, ZeroToRight);
+            ZeroTransform.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightTransform = new Dictionary<Shape, Point[]>();
+            RightTransform.Add(Shape.Zero, RightToZero);
+            RightTransform.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseTransform = new Dictionary<Shape, Point[]>();
+            InverseTransform.Add(Shape.Right, InverseToRight);
+            InverseTransform.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftTransform = new Dictionary<Shape, Point[]>();
+            LeftTransform.Add(Shape.Zero, LeftToZero);
+            LeftTransform.Add(Shape.Inverse, LeftToInverse);
+
+            m_RotationData.Add(Shape.Zero, ZeroTransform);
+            m_RotationData.Add(Shape.Right, RightTransform);
+            m_RotationData.Add(Shape.Inverse, InverseTransform);
+            m_RotationData.Add(Shape.Left, LeftTransform);
+
+        }
+        protected override void SetWallKickData()
+        {
+            // wall kick data
+            Point[] ZeroToRight = { new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) };
+            Point[] RightToZero = { new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) };
+            Point[] RightToInverse = { new Point(1, 0), new Point(1, -1), new Point(0, 2), new Point(1, 2) };
+            Point[] InverseToRight = { new Point(-1, 0), new Point(-1, 1), new Point(0, -2), new Point(-1, -2) };
+            Point[] InverseToLeft = { new Point(1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) };
+            Point[] LeftToInverse = { new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) };
+            Point[] LeftToZero = { new Point(-1, 0), new Point(-1, -1), new Point(0, 2), new Point(-1, 2) };
+            Point[] ZeroToLeft = { new Point(-1, 0), new Point(1, 1), new Point(0, -2), new Point(1, -2) };
+
+            Dictionary<Shape, Point[]> ZeroOffset = new Dictionary<Shape, Point[]>();
+            ZeroOffset.Add(Shape.Right, ZeroToRight);
+            ZeroOffset.Add(Shape.Left, ZeroToLeft);
+            Dictionary<Shape, Point[]> RightOffset = new Dictionary<Shape, Point[]>();
+            RightOffset.Add(Shape.Zero, RightToZero);
+            RightOffset.Add(Shape.Inverse, RightToInverse);
+            Dictionary<Shape, Point[]> InverseOffset = new Dictionary<Shape, Point[]>();
+            InverseOffset.Add(Shape.Right, InverseToRight);
+            InverseOffset.Add(Shape.Left, InverseToLeft);
+            Dictionary<Shape, Point[]> LeftOffset = new Dictionary<Shape, Point[]>();
+            LeftOffset.Add(Shape.Zero, LeftToZero);
+            LeftOffset.Add(Shape.Inverse, LeftToInverse);
+
+            m_WallkickTestOffset.Add(Shape.Zero, ZeroOffset);
+            m_WallkickTestOffset.Add(Shape.Right, RightOffset);
+            m_WallkickTestOffset.Add(Shape.Inverse, InverseOffset);
+            m_WallkickTestOffset.Add(Shape.Left, LeftOffset);
+        }
+    }
+
+    /// <summary>
+    /// Z Piece
+    /// Block Position :
+    /// Zero:           Right:          Inverse:        Left:
+    /// -------         -------         -------         -------
+    /// |0 1  |         |    0|         |     |         |  3  |
+    /// |  2 3|         |  2 1|         |3 2  |         |1 2  |
+    /// |     |         |  3  |         |  1 0|         |0    |
+    /// -------         -------         -------         -------
+    /// </summary>
+    class ZPiece : Piece
+    {
+        public ZPiece(Field bindingField)
+            : base(bindingField)
+        {
+            m_blockType = BlockType.Red;
+            SetSpawnPos();
+            SetRotationData();
+            SetWallKickData();
+        }
+        // set the piece's initial state and location.
+        protected override void SetSpawnPos()
+        {
+            m_BlockPos = new Point[4];
+            int hCenter = (m_BindingField.Width + 1) / 2 - 1;// center of a row in the field
+            int top = m_BindingField.Height - 3; // top line of the field
+            m_BlockPos[0] = new Point(hCenter - 1, top);
+            m_BlockPos[1] = new Point(hCenter, top);
+            m_BlockPos[2] = new Point(hCenter, top - 1);
+            m_BlockPos[3] = new Point(hCenter + 1, top - 1);
+        }
+        /// <summary>
+        /// Zero:           Right:          Inverse:        Left:           Zero:
+        /// -------         -------         -------         -------         -------
+        /// |0 1  |         |    0|         |     |         |  3  |         |0 1  |
+        /// |  2 3|         |  2 1|         |3 2  |         |1 2  |         |  2 3|
+        /// |     |         |  3  |         |  1 0|         |0    |         |     |
+        /// -------         -------         -------         -------         -------
+        /// </summary>
+        protected override void SetRotationData()
+        {
+            // rotation data
+            Point[] ZeroToRight = { new Point(2, 0), new Point(1, -1), new Point(0, 0), new Point(-1, -1) };
+            Point[] RightToZero = { new Point(-2, 0), new Point(-1, 1), new Point(0, 0), new Point(1, 1) };
+            Point[] RightToInverse = { new Point(0, -2), new Point(-1, -1), new Point(0, 0), new Point(-1, 1) };
+            Point[] InverseToRight = { new Point(0, 2), new Point(1, 1), new Point(0, 0), new Point(1, -1) };
+            Point[] InverseToLeft = { new Point(-2, 0), new Point(-1, 1), new Point(0, 0), new Point(1, 1) };
+            Point[] LeftToInverse = { new Point(2, 0), new Point(1, -1), new Point(0, 0), new Point(-1, -1) };
+            Point[] LeftToZero = { new Point(0, 2), new Point(1, 1), new Point(0, 0), new Point(1, -1) };
+            Point[] ZeroToLeft = { new Point(0, -2), new Point(-1, -1), new Point(0, 0), new Point(-1, 1) };
 
             Dictionary<Shape, Point[]> ZeroTransform = new Dictionary<Shape, Point[]>();
             ZeroTransform.Add(Shape.Right, ZeroToRight);

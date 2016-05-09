@@ -36,19 +36,19 @@ namespace TetrisEngine
             switch (nextPiece)
             {
                 case 'I':
-                    break;
+                    return new IPiece(field);
                 case 'J':
-                    break;
+                    return new JPiece(field);
                 case 'L':
                     return new LPiece(field);
                 case 'O':
-                    break;
+                    return new OPiece(field);
                 case 'S':
-                    break;
+                    return new SPiece(field);
                 case 'T':
-                    break;
+                    return new TPiece(field);
                 case 'Z':
-                    break;
+                    return new ZPiece(field);
             }
             return null;
         }
