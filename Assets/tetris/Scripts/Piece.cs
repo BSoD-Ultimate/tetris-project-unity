@@ -94,6 +94,8 @@ namespace TetrisEngine
         public void Reset()
         {
             m_FixCountdownResetCount = 0;
+            CurrentState = State.Unfixed;
+            CurrentShape = Shape.Zero;
             SetSpawnPos();
         }
         #region PieceBehavior

@@ -97,6 +97,7 @@ public class GameManager : MonoBehaviour
     }
     private bool isInitialRotationPerformed = false;
     private bool isHoldPerformed = false;
+    private bool isGameOver = false;
     private WaitCoroutine coWaitPieceFix;
     #endregion
 
@@ -107,10 +108,7 @@ public class GameManager : MonoBehaviour
         {
             for (int i = 0; i < blocks.Length; i++)
             {
-                //if (!blocks[i].GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("red_block_fixed"))
-                //{
-                    blocks[i].GetComponent<Animator>().SetBool("Fixed", true);
-                //}
+                blocks[i].GetComponent<Animator>().SetBool("Fixed", true);
             }
         }
     }
@@ -207,7 +205,7 @@ public class GameManager : MonoBehaviour
         // hold
         if (m_HoldPiece != null)
         {
-            m_HoldPieceShow.GetComponent<SpriteRenderer>().sprite = m_MapPieceSprite[m_HoldPiece.ToString()];
+            m_HoldPieceShow.GetComponent<SpriteRenderer>().sprite = m_MapPieceSprite[m_HoldPiece.GetType().Name];
         }
         else
         {
@@ -334,10 +332,20 @@ public class GameManager : MonoBehaviour
         }
         return false;
     }
-    //public bool DoSoftDrop()
-    //{
-
-    //}
+    public bool DoSoftDrop()
+    {
+        if (isPieceSpawned && m_CurrentPiece.CurrentState != Piece.State.Fixed)
+        {
+            bool success = m_CurrentPiece.MoveDown();
+            if (success)
+            {
+                UpdatePiecePosition();
+                CheckPieceState();
+                return true;
+            }
+        }
+        return false;
+    }
     public bool DoHardDrop()
     {
         if (isPieceSpawned && m_CurrentPiece.CurrentState != Piece.State.Fixed)
@@ -372,7 +380,7 @@ public class GameManager : MonoBehaviour
             if (!isInitialRotationPerformed)
             {
                 isInitialRotationPerformed = true;
-
+                Debug.Log("Initial Rotation CW");
                 return m_CurrentPiece.RotateCW();
             }
             else
@@ -405,7 +413,7 @@ public class GameManager : MonoBehaviour
             if (!isInitialRotationPerformed)
             {
                 isInitialRotationPerformed = true;
-
+                Debug.Log("Initial Rotation CCW");
                 return m_CurrentPiece.RotateCCW();
 
             }
@@ -429,10 +437,72 @@ public class GameManager : MonoBehaviour
             return false;
         }
     }
-    //public bool DoHoldPiece()
-    //{
+    public bool DoHoldPiece()
+    {
+        if (isHoldPerformed)
+        {
+            return false;
+        }
+        if (m_CurrentPiece.CurrentState == Piece.State.Fixed)
+        {
+            return false;
+        }
+        isHoldPerformed = true;
+        if (!isPieceSpawned)
+        {
+            // initial hold
+            if (m_HoldPiece == null)
+            {
+                // hold the current piece
+                m_HoldPiece = m_IncomingPieceQueue.Dequeue();
+                m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
 
-    //}
+            }
+            else
+            {
+                m_CurrentPiece = m_HoldPiece;
+                // hold piece is altered by next piece
+                m_HoldPiece = m_IncomingPieceQueue.Dequeue();
+                m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
+            }
+        }
+        else
+        {
+            // normal hold
+            Piece tempPiece;
+            if (m_HoldPiece == null)
+            {
+                // hold the current piece
+                m_HoldPiece = m_CurrentPiece;
+                m_HoldPiece.Reset();
+                // fetch a new piece from the incoming queue
+                m_CurrentPiece = m_IncomingPieceQueue.Dequeue();
+                m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
+            }
+            else
+            {
+                // swap between hold piece and current piece
+                tempPiece = m_CurrentPiece;
+                m_CurrentPiece = m_HoldPiece;
+                m_HoldPiece = tempPiece;
+                m_HoldPiece.Reset();
+            }
+
+            // Since current piece is spawned, we destroy blocks related to current piece
+            for (int i = 0; i < m_BlockCurrentPiece.Length; i++)
+            {
+                Destroy(m_BlockCurrentPiece[i]);
+                m_BlockCurrentPiece[i] = null;
+            }
+            UpdatePiecePreview();
+            if (!SpawnPiece())
+            {
+                isGameOver = true;
+            }
+        }
+        return true;
+    }
+
     // Main logic of the game
     IEnumerator HandleGame()
     {
@@ -443,11 +513,15 @@ public class GameManager : MonoBehaviour
             isInitialRotationPerformed = false;
             isHoldPerformed = false;
 
-            // fetch a piece from the queue
-            m_CurrentPiece = m_IncomingPieceQueue.Dequeue();
-            m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
-
+            // spawn delay
             yield return new WaitForSeconds(PieceSpawnDelay);
+
+            // fetch a piece from the queue
+            if (!isHoldPerformed)// initial hold not performed
+            {
+                m_CurrentPiece = m_IncomingPieceQueue.Dequeue();
+                m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
+            }
 
             UpdatePiecePreview();
 
@@ -455,6 +529,10 @@ public class GameManager : MonoBehaviour
 
             //spawn the piece
             if (!SpawnPiece())
+            {
+                isGameOver = true;
+            }
+            if (isGameOver)
             {
                 //if spawn fails, the game is over.
                 GameOver();
@@ -509,10 +587,10 @@ public class GameManager : MonoBehaviour
     {
         bool isRowCleared = false;
         Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
-        List<int> rowID=new List<int>();
-        foreach(Point point in blockPos)
+        List<int> rowID = new List<int>();
+        foreach (Point point in blockPos)
         {
-            if(!rowID.Contains(point.y))
+            if (!rowID.Contains(point.y))
             {
                 rowID.Add(point.y);
             }
