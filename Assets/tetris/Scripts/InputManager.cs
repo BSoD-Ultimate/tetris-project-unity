@@ -11,7 +11,6 @@ public class InputManager : MonoBehaviour
 
     private Coroutine coHandlePieceMove;
     private Coroutine coHandleOtherInputs;
-    private bool isInitialRotationActive = false;
 
     // Input handle priority: Hard Drop > Left/Right Move > Soft Drop
     #region Input Handlers
@@ -51,10 +50,18 @@ public class InputManager : MonoBehaviour
             {
                 GameManager.instance.DoRotateCCW();
             }
-            if (Input.GetButtonDown("Hold Piece"))
+            if (Input.GetButton("Hold Piece"))
             {
-                Debug.Log("Hold performed");
                 GameManager.instance.DoHoldPiece();
+            }
+            // initial rotation
+            if (Input.GetButton("Rotate CW") && !GameManager.instance.IsPieceSpawned)
+            {
+                GameManager.instance.DoRotateCW();
+            }
+            if (Input.GetButton("Rotate CCW") && !GameManager.instance.IsPieceSpawned)
+            {
+                GameManager.instance.DoRotateCCW();
             }
             yield return null;
         }
@@ -88,7 +95,7 @@ public class InputManager : MonoBehaviour
     }
     IEnumerator HandleSoftDropInput()
     {
-        Debug.Log("Soft Drop performed");
+        //Debug.Log("Soft Drop performed");
         GameManager.instance.DoSoftDrop();
         yield return new WaitForSeconds(SoftDropSpeed);
     }

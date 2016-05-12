@@ -377,7 +377,7 @@ public class GameManager : MonoBehaviour
         if (!isPieceSpawned)
         {
             // initial rotation
-            if (!isInitialRotationPerformed)
+            if (m_CurrentPiece.CurrentState != Piece.State.Fixed && !isInitialRotationPerformed)
             {
                 isInitialRotationPerformed = true;
                 Debug.Log("Initial Rotation CW");
@@ -410,7 +410,7 @@ public class GameManager : MonoBehaviour
         if (!isPieceSpawned)
         {
             // initial rotation
-            if (!isInitialRotationPerformed)
+            if (m_CurrentPiece.CurrentState != Piece.State.Fixed && !isInitialRotationPerformed)
             {
                 isInitialRotationPerformed = true;
                 Debug.Log("Initial Rotation CCW");
@@ -451,25 +451,27 @@ public class GameManager : MonoBehaviour
         if (!isPieceSpawned)
         {
             // initial hold
+            // Caution: initial hold is occurred after current piece is replaced by the next one (on the screen)
             if (m_HoldPiece == null)
             {
                 // hold the current piece
-                m_HoldPiece = m_IncomingPieceQueue.Dequeue();
+                m_HoldPiece = m_CurrentPiece;
+                m_CurrentPiece = m_IncomingPieceQueue.Dequeue();
                 m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
-
             }
             else
             {
+                // current piece is the next piece on the screen, so we swap hold piece and the current one here.
+                Piece tempPiece;
+                tempPiece = m_CurrentPiece;
                 m_CurrentPiece = m_HoldPiece;
-                // hold piece is altered by next piece
-                m_HoldPiece = m_IncomingPieceQueue.Dequeue();
-                m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
+                m_HoldPiece = tempPiece;
             }
+            UpdatePiecePreview();
         }
         else
         {
             // normal hold
-            Piece tempPiece;
             if (m_HoldPiece == null)
             {
                 // hold the current piece
@@ -481,6 +483,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
+                Piece tempPiece;
                 // swap between hold piece and current piece
                 tempPiece = m_CurrentPiece;
                 m_CurrentPiece = m_HoldPiece;
@@ -517,15 +520,13 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(PieceSpawnDelay);
 
             // fetch a piece from the queue
-            if (!isHoldPerformed)// initial hold not performed
-            {
-                m_CurrentPiece = m_IncomingPieceQueue.Dequeue();
-                m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
-            }
+            m_CurrentPiece = m_IncomingPieceQueue.Dequeue();
+            m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
+
+            // yield return here so that input coroutines can perform initial rotation/hold here.
+            yield return null;
 
             UpdatePiecePreview();
-
-            m_coPieceDrop = StartCoroutine(HandlePieceDrop());
 
             //spawn the piece
             if (!SpawnPiece())
@@ -539,7 +540,11 @@ public class GameManager : MonoBehaviour
                 break;
             }
 
+            m_coPieceDrop = StartCoroutine(HandlePieceDrop());
+
             isPieceSpawned = true;
+            // since piece has been spawned, initial rotation should not performed
+            isInitialRotationPerformed = true;
 
             while (m_CurrentPiece.CurrentState != Piece.State.Fixed)
             {
