@@ -18,6 +18,8 @@ public class GameManager : MonoBehaviour
     // predefined block type
     public GameObject[] m_BlockType;
     public Dictionary<BlockType, GameObject> m_MapBlockType;
+    public GameObject[] m_BlockHintType;
+    public Dictionary<BlockType, GameObject> m_MapBlockHintType;
 
     // gameobjects which show hold and next piece
     public GameObject[] m_NextPieceShow;
@@ -27,7 +29,8 @@ public class GameManager : MonoBehaviour
     private GameObject[,] m_BlockView;
     // current piece
     private GameObject[] m_BlockCurrentPiece;
-
+    // hint blocks indicate where current piece will be drop
+    private GameObject[] m_BlockHint;
     // coroutine controls piece drop
     private Coroutine m_coPieceDrop;
 
@@ -98,6 +101,14 @@ public class GameManager : MonoBehaviour
     private bool isInitialRotationPerformed = false;
     private bool isHoldPerformed = false;
     private bool isGameOver = false;
+    private bool isHintShown = true;
+    public bool IsHintShown
+    {
+        get
+        {
+            return isHintShown;
+        }
+    }
     private WaitCoroutine coWaitPieceFix;
     #endregion
 
@@ -148,6 +159,17 @@ public class GameManager : MonoBehaviour
         m_MapBlockType.Add(BlockType.Blue, m_BlockType[6]);
         m_MapBlockType.Add(BlockType.Purple, m_BlockType[7]);
         m_MapBlockType.Add(BlockType.Bone, m_BlockType[8]);
+
+        m_MapBlockHintType = new Dictionary<BlockType, GameObject>();
+        m_MapBlockHintType.Add(BlockType.Grey, m_BlockHintType[0]);
+        m_MapBlockHintType.Add(BlockType.Red, m_BlockHintType[1]);
+        m_MapBlockHintType.Add(BlockType.Orange, m_BlockHintType[2]);
+        m_MapBlockHintType.Add(BlockType.Yellow, m_BlockHintType[3]);
+        m_MapBlockHintType.Add(BlockType.Green, m_BlockHintType[4]);
+        m_MapBlockHintType.Add(BlockType.Cyan, m_BlockHintType[5]);
+        m_MapBlockHintType.Add(BlockType.Blue, m_BlockHintType[6]);
+        m_MapBlockHintType.Add(BlockType.Purple, m_BlockHintType[7]);
+        m_MapBlockHintType.Add(BlockType.Bone, m_BlockHintType[8]);
 
         // public properties
         AutoShiftDelay = 0.25f;
@@ -259,6 +281,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // update piece drop hint position
+    private void UpdateHintPosition()
+    {
+        if (isHintShown)
+        {
+            int offset = m_CurrentPiece.TryMoveDown(m_Field.Height);
+            Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
+            for (int i = 0; i < m_BlockHint.Length; i++)
+            {
+                Vector3 newPosition = new Vector3(blockPos[i].x, blockPos[i].y - offset);
+                m_BlockHint[i].transform.position = newPosition;
+            }
+        }
+    }
+
     public Piece GetCurrentPiece()
     {
         return m_CurrentPiece;
@@ -274,6 +311,18 @@ public class GameManager : MonoBehaviour
             GameObject block = m_MapBlockType[m_CurrentPiece.PieceStyle];
             Vector3 position = new Vector3(blockPos[i].x, blockPos[i].y);
             m_BlockCurrentPiece[i] = (GameObject)Instantiate(block, position, Quaternion.identity);
+        }
+
+        // spawn hint
+        if (isHintShown)
+        {
+            m_BlockHint = new GameObject[blockPos.Length];
+            for (int i = 0; i < blockPos.Length; i++)
+            {
+                GameObject block = m_MapBlockHintType[m_CurrentPiece.PieceStyle];
+                Vector3 position = new Vector3(blockPos[i].x, blockPos[i].y - m_CurrentPiece.TryMoveDown(m_Field.Height));
+                m_BlockHint[i] = (GameObject)Instantiate(block, position, Quaternion.identity);
+            }
         }
 
         // check if spawn operation is successful
@@ -312,6 +361,7 @@ public class GameManager : MonoBehaviour
             if (success)
             {
                 UpdatePiecePosition();
+                UpdateHintPosition();
                 CheckPieceState();
                 return true;
             }
@@ -326,6 +376,7 @@ public class GameManager : MonoBehaviour
             if (success)
             {
                 UpdatePiecePosition();
+                UpdateHintPosition();
                 CheckPieceState();
                 return true;
             }
@@ -357,6 +408,16 @@ public class GameManager : MonoBehaviour
             // stop the countdown timer
             coWaitPieceFix.Stop();
             coWaitPieceFix.Reset();
+
+            // destroy hint blocks
+            if (isHintShown)
+            {
+	            for (int i = 0; i < m_BlockHint.Length; i++)
+	            {
+	                Destroy(m_BlockHint[i]);
+	                m_BlockHint[i] = null;
+	            }
+            }
 
             // apply piece to the field.
             Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
@@ -397,6 +458,7 @@ public class GameManager : MonoBehaviour
                 if (success)
                 {
                     UpdatePiecePosition();
+                    UpdateHintPosition();
                     CheckPieceState();
                 }
                 return success;
@@ -430,6 +492,7 @@ public class GameManager : MonoBehaviour
                 if (success)
                 {
                     UpdatePiecePosition();
+                    UpdateHintPosition();
                     CheckPieceState();
                 }
                 return success;
@@ -496,6 +559,15 @@ public class GameManager : MonoBehaviour
             {
                 Destroy(m_BlockCurrentPiece[i]);
                 m_BlockCurrentPiece[i] = null;
+            }
+            // we also destroy corresponding hint blocks.
+            if (isHintShown)
+            {
+                for (int i = 0; i < m_BlockHint.Length; i++)
+                {
+                    Destroy(m_BlockHint[i]);
+                    m_BlockHint[i] = null;
+                }
             }
             UpdatePiecePreview();
             if (!SpawnPiece())
@@ -570,6 +642,16 @@ public class GameManager : MonoBehaviour
                         for (int i = 0; i < m_BlockCurrentPiece.Length; i++)
                         {
                             m_BlockView[blockPos[i].y, blockPos[i].x] = m_BlockCurrentPiece[i];
+                        }
+
+                        // destroy hint blocks
+                        if (isHintShown)
+                        {
+                            for (int i = 0; i < m_BlockHint.Length; i++)
+                            {
+                                Destroy(m_BlockHint[i]);
+                                m_BlockHint[i] = null;
+                            }
                         }
                     }
                 }

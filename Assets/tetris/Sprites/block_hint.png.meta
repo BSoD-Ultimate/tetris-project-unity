@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 59a668ab79f4f4b4a9dcc7ad38c3116f
-timeCreated: 1460986128
+guid: 29f0d06ede6583e4abd338b806e1a514
+timeCreated: 1463101595
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -16,7 +16,7 @@ TextureImporter:
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 1
+    enableMipMap: 0
     linearTexture: 0
     correctGamma: 0
     fadeOut: 0
@@ -53,7 +53,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 32
   alphaIsTransparency: 1
   textureType: 8
   buildTargetSettings: []
@@ -63,101 +63,137 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 128
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 256
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_1
       rect:
         serializedVersion: 2
         x: 0
-        y: 112
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 224
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_2
       rect:
         serializedVersion: 2
         x: 0
-        y: 96
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 192
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_3
       rect:
         serializedVersion: 2
         x: 0
-        y: 80
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 160
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_4
       rect:
         serializedVersion: 2
         x: 0
-        y: 64
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 128
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_5
       rect:
         serializedVersion: 2
         x: 0
-        y: 48
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 96
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_6
       rect:
         serializedVersion: 2
         x: 0
-        y: 32
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 64
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_7
       rect:
         serializedVersion: 2
         x: 0
-        y: 16
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        y: 32
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     - name: block_hint_8
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 16
-        height: 16
-      alignment: 2
-      pivot: {x: 0.5, y: 1}
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
+      outline:
+      - - {x: -16, y: 16}
+        - {x: -16, y: -16}
+        - {x: 16, y: -16}
+        - {x: 16, y: 16}
     outline: []
   spritePackingTag: 
   userData: 

@@ -204,6 +204,26 @@ namespace TetrisEngine
                 return false;
             }
         }
+        public int TryMoveDown(int stepCount)
+        {
+            Debug.Assert(m_BlockPos != null);
+
+            Point[] newPos = CloneBlockPos(m_BlockPos);
+            for (int i=0;i<stepCount;i++)
+            {
+	            foreach (Point point in newPos)
+	            {
+	                point.y--;
+	            }
+                if(!IsPlaceAvailable(newPos))
+                {
+                    return i;
+                }
+            }
+
+            return stepCount;
+        }
+
         public bool MoveDown()
         {
             Debug.Assert(m_BlockPos != null);
