@@ -25,6 +25,8 @@ public class GameManager : MonoBehaviour
     public GameObject[] m_NextPieceShow;
     public GameObject m_HoldPieceShow;
 
+    public GameObject m_GameOverText;
+
     // blocks on the scene
     private GameObject[,] m_BlockView;
     // current piece
@@ -236,8 +238,15 @@ public class GameManager : MonoBehaviour
         // next
         for (int i = 0; i < m_NextPieceShow.Length; i++)
         {
-            string pieceName = m_IncomingPieceQueue.ElementAt(i).GetType().Name;
-            m_NextPieceShow[i].GetComponent<SpriteRenderer>().sprite = m_MapPieceSprite[pieceName];
+            if (i<m_IncomingPieceQueue.Count)
+            {
+	            string pieceName = m_IncomingPieceQueue.ElementAt(i).GetType().Name;
+	            m_NextPieceShow[i].GetComponent<SpriteRenderer>().sprite = m_MapPieceSprite[pieceName];
+            } 
+            else
+            {
+                m_NextPieceShow[i].GetComponent<SpriteRenderer>().sprite = null;
+            }
         }
 
     }
@@ -330,9 +339,64 @@ public class GameManager : MonoBehaviour
 
     }
 
-    void GameOver()
+    IEnumerator GameOver()
     {
         Debug.Log("Game Over");
+        // stop all coroutines related to game
+        StopCoroutine(m_coPieceDrop);
+        inputManager.StopHandleInput();
+
+        // destroy hint blocks
+        for (int i = 0; i < m_BlockHint.Length; i++)
+        {
+            Destroy(m_BlockHint[i]);
+            m_BlockHint[i] = null;
+        }
+
+        // replace conflict blocks with current piece
+        Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
+        for (int i = 0; i < m_BlockCurrentPiece.Length; i++)
+        {
+            if (m_BlockView[blockPos[i].y, blockPos[i].x] != null)
+            {
+                Destroy(m_BlockView[blockPos[i].y, blockPos[i].x]);
+            }
+            m_BlockView[blockPos[i].y, blockPos[i].x] = m_BlockCurrentPiece[i];
+        }
+
+        // destroy blocks from bottom to top
+        for (int i = 0; i < m_Field.Height; i++)
+        {
+            for (int j = 0; j < m_Field.Width; j++)
+            {
+                if (m_BlockView[i, j] != null)
+                {
+                    Destroy(m_BlockView[i, j]);
+                    m_BlockView[i, j] = null;
+                }
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        yield return null;
+
+        // clear all classes releted to current game
+        m_CurrentPiece = null;
+        m_HoldPiece = null;
+        m_IncomingPieceQueue.Clear();
+        m_Field.Clear();
+        UpdatePiecePreview();
+
+        // show game over on screen
+
+        GameObject gameOver = (GameObject)Instantiate(m_GameOverText, new Vector3(4.5f, 9.5f), Quaternion.identity);
+        yield return new WaitForSeconds(2f);
+        Destroy(gameOver);
+
+
+        // reset game over flags
+        isGameOver = false;
+        yield return null;
     }
 
     private void CheckPieceState()
@@ -412,11 +476,11 @@ public class GameManager : MonoBehaviour
             // destroy hint blocks
             if (isHintShown)
             {
-	            for (int i = 0; i < m_BlockHint.Length; i++)
-	            {
-	                Destroy(m_BlockHint[i]);
-	                m_BlockHint[i] = null;
-	            }
+                for (int i = 0; i < m_BlockHint.Length; i++)
+                {
+                    Destroy(m_BlockHint[i]);
+                    m_BlockHint[i] = null;
+                }
             }
 
             // apply piece to the field.
@@ -608,7 +672,7 @@ public class GameManager : MonoBehaviour
             if (isGameOver)
             {
                 //if spawn fails, the game is over.
-                GameOver();
+                yield return GameOver();
                 break;
             }
 

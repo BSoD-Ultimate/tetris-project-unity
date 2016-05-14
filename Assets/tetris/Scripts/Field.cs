@@ -142,6 +142,17 @@ namespace TetrisEngine
             }
             return true;
         }
+        // clear all blocks.
+        public void Clear()
+        {
+            for(int i=0;i<m_Height;i++)
+            {
+                for(int j=0;j<m_Width;j++)
+                {
+                    m_field[i, j] = null;
+                }
+            }
+        }
     }
 }
 

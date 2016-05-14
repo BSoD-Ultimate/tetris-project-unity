@@ -114,18 +114,4 @@ namespace TetrisEngine
             return m_blockBindings[m_random.Next(m_maxValue)];
         }
     }
-    /// <summary>
-    /// only generates L Piece, for test
-    /// </summary>
-    class TestRandomizer : BlockRandomizer
-    {
-        public TestRandomizer() : base()
-        {
-
-        }
-        protected override char GetNext()
-        {
-            return m_blockBindings[2];
-        }
-    }
 }
