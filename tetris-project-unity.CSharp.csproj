@@ -63,14 +63,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\tetris\Scripts\BlockChip.cs" />
-    <Compile Include="Assets\tetris\Scripts\BlockRandomizer.cs" />
-    <Compile Include="Assets\tetris\Scripts\Field.cs" />
+    <Compile Include="Assets\BitmapFontImporter.cs" />
+    <Compile Include="Assets\FPSLock.cs" />
+    <Compile Include="Assets\PixelCamera2D\Scripts\PixelCamera2D.cs" />
+    <Compile Include="Assets\PixelCamera2D\Scripts\PixelCamera2DBehaviour.cs" />
+    <Compile Include="Assets\ProgressBar\Script\ProgressBarBehaviour.cs" />
+    <Compile Include="Assets\ProgressBar\Script\ProgressRadialBehaviour.cs" />
+    <Compile Include="Assets\ProgressBar\Script\Utils.cs" />
+    <Compile Include="Assets\tetris\Scripts\Engine\BlockChip.cs" />
+    <Compile Include="Assets\tetris\Scripts\Engine\BlockRandomizer.cs" />
+    <Compile Include="Assets\tetris\Scripts\Engine\Field.cs" />
+    <Compile Include="Assets\tetris\Scripts\Engine\LineClearEvent.cs" />
+    <Compile Include="Assets\tetris\Scripts\Engine\Piece.cs" />
+    <Compile Include="Assets\tetris\Scripts\Engine\Point.cs" />
     <Compile Include="Assets\tetris\Scripts\GameManager.cs" />
     <Compile Include="Assets\tetris\Scripts\InputManager.cs" />
     <Compile Include="Assets\tetris\Scripts\Loader.cs" />
-    <Compile Include="Assets\tetris\Scripts\Piece.cs" />
-    <Compile Include="Assets\tetris\Scripts\Point.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\tetris\Fonts\04b08.fnt" />
+    <None Include="Assets\tetris\Fonts\04b08_16_edge.fnt" />
+    <None Include="Assets\tetris\Fonts\04b08_24_edge.fnt" />
+    <None Include="Assets\tetris\Fonts\04b08_8.fnt" />
+    <None Include="Assets\tetris\Fonts\04b08_8_edge.fnt" />
+    <None Include="Assets\tetris\Fonts\OCRASTD_16.fnt" />
+    <None Include="Assets\tetris\Fonts\font.fnt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
 </Project>

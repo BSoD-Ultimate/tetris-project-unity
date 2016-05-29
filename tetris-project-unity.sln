@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tetris-project-unity.CSharp", "tetris-project-unity.CSharp.csproj", "{A8F506CE-92CF-4349-8D8F-0DB4A03D7DED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tetris-project-unity.CSharp.Editor", "tetris-project-unity.CSharp.Editor.csproj", "{0D8E1F15-EF3B-2F2D-57D0-A6262A5AC82F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{A8F506CE-92CF-4349-8D8F-0DB4A03D7DED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8F506CE-92CF-4349-8D8F-0DB4A03D7DED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8F506CE-92CF-4349-8D8F-0DB4A03D7DED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D8E1F15-EF3B-2F2D-57D0-A6262A5AC82F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D8E1F15-EF3B-2F2D-57D0-A6262A5AC82F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D8E1F15-EF3B-2F2D-57D0-A6262A5AC82F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D8E1F15-EF3B-2F2D-57D0-A6262A5AC82F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -389,9 +389,9 @@ public class GameManager : MonoBehaviour
 
         // show game over on screen
 
-        GameObject gameOver = (GameObject)Instantiate(m_GameOverText, new Vector3(4.5f, 9.5f), Quaternion.identity);
-        yield return new WaitForSeconds(2f);
-        Destroy(gameOver);
+        //GameObject gameOver = (GameObject)Instantiate(m_GameOverText, new Vector3(4.5f, 9.5f), Quaternion.identity);
+        //yield return new WaitForSeconds(2f);
+        //Destroy(gameOver);
 
 
         // reset game over flags
@@ -737,8 +737,10 @@ public class GameManager : MonoBehaviour
     private bool CheckRowClear()
     {
         bool isRowCleared = false;
+        int rowCount = 0;
         Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
         List<int> rowID = new List<int>();
+        List<int> clearRow = new List<int>();
         foreach (Point point in blockPos)
         {
             if (!rowID.Contains(point.y))
@@ -751,8 +753,9 @@ public class GameManager : MonoBehaviour
         {
             if (m_Field.CheckRow(row))
             {
+                rowCount++;
                 isRowCleared = true;
-                m_Field.ClearRow(row);
+                clearRow.Add(row);
                 // destroy the corresponding lines on the screen
                 for (int i = 0; i < m_Field.Width; i++)
                 {
@@ -761,9 +764,22 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        // row cleared
+        // judge row clear type (single/double/tetris/t-spin/etc...)
+        if(isRowCleared)
+        {
+            LineClearEvent clearEvent = LineClearEvent.GetLineClearEvent(rowCount, m_CurrentPiece);
+            //Debug.Log("");
+            Debug.Assert(clearEvent != null);
+            Debug.Log(clearEvent.GetFullTypeString());
+        }
+
+        // clear row on field
         if (isRowCleared)
         {
+            foreach(int row in clearRow)
+            {
+                m_Field.ClearRow(row);
+            }
             m_Field.CollapseRows();
         }
         return isRowCleared;
