@@ -45,7 +45,8 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region properties
-    public float AutoShiftDelay
+    // properties control game behavior. the unit of the properties is frames. 
+    public int AutoShiftDelay
     {
         get
         {
@@ -58,37 +59,39 @@ public class GameManager : MonoBehaviour
             inputManager.AutoShiftDelay = value;
         }
     }
-    public float AutoShiftInterval
+    public int AutoShiftInterval
     {
         get
         {
             Debug.Assert(inputManager != null);
-            return inputManager.AutoShiftSpeed;
+            return inputManager.AutoShiftInterval;
         }
         set
         {
             Debug.Assert(inputManager != null);
-            inputManager.AutoShiftSpeed = value;
+            inputManager.AutoShiftInterval = value;
         }
     }
-    public float SoftDropInterval
+    public int SoftDropInterval
     {
         get
         {
             Debug.Assert(inputManager != null);
-            return inputManager.SoftDropSpeed;
+            return inputManager.SoftDropInterval;
         }
         set
         {
             Debug.Assert(inputManager != null);
-            inputManager.SoftDropSpeed = value;
+            inputManager.SoftDropInterval = value;
         }
     }
-    public float PieceDropInterval { get; set; }
-    public int PieceDropGravity { get; set; }
-    public float PieceSpawnDelay { get; set; }
-    public float PieceLockDelay { get; set; }
-    public float LineClearDelay { get; set; }
+    public int PieceSpawnDelay { get; set; }
+    public int PieceLockDelay { get; set; }
+    public int LineClearDelay { get; set; }
+    // We regard a piece drop one unit during a frame as 1G. 
+    // When the piece drops at the speed of 1G, the corresponding internal gravity value is 65536.
+    public int PieceDropInternalGravity { get; set; }
+    public const int gravityUnit = 65536;
     #endregion
 
     #region internal flags
@@ -111,7 +114,7 @@ public class GameManager : MonoBehaviour
             return isHintShown;
         }
     }
-    private WaitCoroutine coWaitPieceFix;
+    private FrameWaitCoroutine coWaitLockDelay;
     #endregion
 
     // a wrapper controls block's animation
@@ -174,14 +177,13 @@ public class GameManager : MonoBehaviour
         m_MapBlockHintType.Add(BlockType.Bone, m_BlockHintType[8]);
 
         // public properties
-        AutoShiftDelay = 0.25f;
-        AutoShiftInterval = 0.015f;
-        SoftDropInterval = 0.01f;
-        PieceDropInterval = 0.5f;
-        PieceDropGravity = 1;
-        PieceSpawnDelay = 0.4f;
-        PieceLockDelay = 0.5f;
-        LineClearDelay = 0.5f;
+        AutoShiftDelay = 14;
+        AutoShiftInterval = 1;
+        SoftDropInterval = 1;
+        PieceDropInternalGravity = 1310720;
+        PieceSpawnDelay = 24;
+        PieceLockDelay = 30;
+        LineClearDelay = 30;
 
     }
 
@@ -212,7 +214,8 @@ public class GameManager : MonoBehaviour
 
         m_BlockView = new GameObject[m_Field.Height, m_Field.Width];
 
-        coWaitPieceFix = new WaitCoroutine(this);
+        coWaitLockDelay = new FrameWaitCoroutine(this);
+        coWaitLockDelay.WaitFrameCount = PieceLockDelay;
 
         // show next piece on screen
         UpdatePiecePreview();
@@ -238,11 +241,11 @@ public class GameManager : MonoBehaviour
         // next
         for (int i = 0; i < m_NextPieceShow.Length; i++)
         {
-            if (i<m_IncomingPieceQueue.Count)
+            if (i < m_IncomingPieceQueue.Count)
             {
-	            string pieceName = m_IncomingPieceQueue.ElementAt(i).GetType().Name;
-	            m_NextPieceShow[i].GetComponent<SpriteRenderer>().sprite = m_MapPieceSprite[pieceName];
-            } 
+                string pieceName = m_IncomingPieceQueue.ElementAt(i).GetType().Name;
+                m_NextPieceShow[i].GetComponent<SpriteRenderer>().sprite = m_MapPieceSprite[pieceName];
+            }
             else
             {
                 m_NextPieceShow[i].GetComponent<SpriteRenderer>().sprite = null;
@@ -275,6 +278,7 @@ public class GameManager : MonoBehaviour
                 if (m_Field[i, j] != null)
                 {
                     m_BlockView[i, j] = (GameObject)Instantiate(m_MapBlockType[m_Field[i, j].Type], new Vector3(j, i), Quaternion.identity);
+                    m_BlockView[i, j].GetComponent<SpriteRenderer>().color = new Color32(192, 192, 192, 255);
                 }
             }
         }
@@ -312,6 +316,11 @@ public class GameManager : MonoBehaviour
 
     public bool SpawnPiece()
     {
+        // 20G mode
+        if (PieceDropInternalGravity >= gravityUnit * 20)
+        {
+            m_CurrentPiece.MoveDown(20);
+        }
         Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
         m_BlockCurrentPiece = new GameObject[blockPos.Length];
         // spawn the piece on the screen
@@ -406,15 +415,19 @@ public class GameManager : MonoBehaviour
             if (m_CurrentPiece.FixResetCount <= Piece.FixCountdownResetMaxCount)
             {
                 // reset the fix countdown timer
-                coWaitPieceFix.Stop();
-                coWaitPieceFix.Reset();
-                coWaitPieceFix.Start(PieceLockDelay);
+                coWaitLockDelay.Reset();
+                coWaitLockDelay.Start();
             }
             if (m_CurrentPiece.TryMoveDown())
             {
                 // TODO: update fix countdown scrollbar?
             }
         }
+        else if (m_CurrentPiece.CurrentState == Piece.State.Unfixed && m_CurrentPiece.FixResetCount > 0)
+        {
+            coWaitLockDelay.Reset();
+        }
+
     }
 
     public bool DoMoveLeft()
@@ -470,8 +483,7 @@ public class GameManager : MonoBehaviour
             BlockAnimation.SetFixed(ref m_BlockCurrentPiece);
             StopCoroutine(m_coPieceDrop);
             // stop the countdown timer
-            coWaitPieceFix.Stop();
-            coWaitPieceFix.Reset();
+            coWaitLockDelay.Reset();
 
             // destroy hint blocks
             if (isHintShown)
@@ -483,11 +495,12 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            // apply piece to the field.
+            // apply piece to the field
             Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
             for (int i = 0; i < m_BlockCurrentPiece.Length; i++)
             {
                 m_BlockView[blockPos[i].y, blockPos[i].x] = m_BlockCurrentPiece[i];
+                m_BlockCurrentPiece[i].GetComponent<SpriteRenderer>().color = new Color32(192, 192, 192, 255);
             }
 
             return true;
@@ -505,7 +518,6 @@ public class GameManager : MonoBehaviour
             if (m_CurrentPiece.CurrentState != Piece.State.Fixed && !isInitialRotationPerformed)
             {
                 isInitialRotationPerformed = true;
-                Debug.Log("Initial Rotation CW");
                 return m_CurrentPiece.RotateCW();
             }
             else
@@ -539,9 +551,7 @@ public class GameManager : MonoBehaviour
             if (m_CurrentPiece.CurrentState != Piece.State.Fixed && !isInitialRotationPerformed)
             {
                 isInitialRotationPerformed = true;
-                Debug.Log("Initial Rotation CCW");
                 return m_CurrentPiece.RotateCCW();
-
             }
             else
             {
@@ -653,7 +663,7 @@ public class GameManager : MonoBehaviour
             isHoldPerformed = false;
 
             // spawn delay
-            yield return new WaitForSeconds(PieceSpawnDelay);
+            yield return StartCoroutine(FrameWaitCoroutine.WaitForFrames(PieceSpawnDelay));
 
             // fetch a piece from the queue
             m_CurrentPiece = m_IncomingPieceQueue.Dequeue();
@@ -663,6 +673,11 @@ public class GameManager : MonoBehaviour
             yield return null;
 
             UpdatePiecePreview();
+
+            m_coPieceDrop = StartCoroutine(HandlePieceDrop());
+
+            // drop the piece first
+            yield return null;
 
             //spawn the piece
             if (!SpawnPiece())
@@ -676,7 +691,7 @@ public class GameManager : MonoBehaviour
                 break;
             }
 
-            m_coPieceDrop = StartCoroutine(HandlePieceDrop());
+
 
             isPieceSpawned = true;
             // since piece has been spawned, initial rotation should not performed
@@ -687,26 +702,28 @@ public class GameManager : MonoBehaviour
                 if (m_CurrentPiece.CurrentState == Piece.State.Fixing)
                 {
 
-                    if (!coWaitPieceFix.IsRunning && !coWaitPieceFix.IsCompleted)
+                    if (!coWaitLockDelay.IsRunning && !coWaitLockDelay.IsCompleted)
                     {
-                        coWaitPieceFix.Start(PieceLockDelay);
+                        coWaitLockDelay.Start();
                     }
 
-                    if (coWaitPieceFix.IsCompleted)
+                    if (coWaitLockDelay.IsCompleted)
                     {
                         // Fix the piece onto the field.
                         m_CurrentPiece.Fix();
                         StopCoroutine(m_coPieceDrop);
-                        coWaitPieceFix.Reset();
+                        coWaitLockDelay.Reset();
                         // update animation
                         BlockAnimation.SetFixed(ref m_BlockCurrentPiece);
 
-                        // apply piece to the field.
+                        // apply piece to the field
                         Point[] blockPos = m_CurrentPiece.CurrentBlockPos;
                         for (int i = 0; i < m_BlockCurrentPiece.Length; i++)
                         {
                             m_BlockView[blockPos[i].y, blockPos[i].x] = m_BlockCurrentPiece[i];
+                            m_BlockCurrentPiece[i].GetComponent<SpriteRenderer>().color = new Color32(192, 192, 192, 255);
                         }
+
 
                         // destroy hint blocks
                         if (isHintShown)
@@ -726,7 +743,7 @@ public class GameManager : MonoBehaviour
             // arrange the field
             if (isLineCleared)
             {
-                yield return new WaitForSeconds(LineClearDelay);
+                yield return StartCoroutine(FrameWaitCoroutine.WaitForFrames(LineClearDelay));
                 UpdateField();
             }
 
@@ -765,7 +782,7 @@ public class GameManager : MonoBehaviour
             }
         }
         // judge row clear type (single/double/tetris/t-spin/etc...)
-        if(isRowCleared)
+        if (isRowCleared)
         {
             LineClearEvent clearEvent = LineClearEvent.GetLineClearEvent(rowCount, m_CurrentPiece);
             //Debug.Log("");
@@ -776,7 +793,7 @@ public class GameManager : MonoBehaviour
         // clear row on field
         if (isRowCleared)
         {
-            foreach(int row in clearRow)
+            foreach (int row in clearRow)
             {
                 m_Field.ClearRow(row);
             }
@@ -790,75 +807,24 @@ public class GameManager : MonoBehaviour
     {
         while (true)
         {
+            // We regard a piece drop one unit during a frame as 1G. 
+            // When the piece drops at the speed of 1G, the corresponding internal gravity value is 65536.
+
+            // how many units will drop during a drop operation.
+            int dropGravity = PieceDropInternalGravity / gravityUnit == 0 ? 1 : PieceDropInternalGravity / gravityUnit;
+            // drop interval, in frames.
+            int dropInterval = gravityUnit / PieceDropInternalGravity == 0 ? 1 : gravityUnit / PieceDropInternalGravity;
             if (isPieceSpawned && m_CurrentPiece.CurrentState != Piece.State.Fixed)
             {
                 // drop the piece
-                m_CurrentPiece.MoveDown(PieceDropGravity);
+                m_CurrentPiece.MoveDown(dropGravity);
 
                 // update to screen 
                 UpdatePiecePosition();
 
             }
-            yield return new WaitForSeconds(PieceDropInterval);
+            yield return StartCoroutine(FrameWaitCoroutine.WaitForFrames(dropInterval));
         }
     }
 
-}
-
-class WaitCoroutine
-{
-    private bool isRunning = false;
-    private bool isCompleted = false;
-
-    private MonoBehaviour m_AttachedScript = null;
-    private Coroutine m_WaitCoroutine = null;
-
-    public WaitCoroutine(MonoBehaviour script)
-    {
-        m_AttachedScript = script;
-    }
-
-    public void Start(float waitForSeconds)
-    {
-        isCompleted = false;
-        m_WaitCoroutine = m_AttachedScript.StartCoroutine(HandleWait(waitForSeconds));
-    }
-
-    public void Stop()
-    {
-        if (m_WaitCoroutine != null)
-        {
-            m_AttachedScript.StopCoroutine(m_WaitCoroutine);
-        }
-        isRunning = false;
-    }
-    public void Reset()
-    {
-        isRunning = false;
-        isCompleted = false;
-    }
-    public bool IsRunning
-    {
-        get
-        {
-            return isRunning;
-        }
-
-    }
-    public bool IsCompleted
-    {
-        get
-        {
-            return isCompleted;
-        }
-    }
-    private IEnumerator HandleWait(float waitForSeconds)
-    {
-        isCompleted = false;
-        isRunning = true;
-        yield return new WaitForSeconds(waitForSeconds);
-        isCompleted = true;
-        isRunning = false;
-        yield return null;
-    }
 }

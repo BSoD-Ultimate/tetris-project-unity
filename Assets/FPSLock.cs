@@ -3,9 +3,11 @@ using System.Collections;
 
 public class FPSLock : MonoBehaviour {
 
+    public int lockValue = 60;
+
     void Awake()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = lockValue;
     }
 	// Use this for initialization
 	void Start () {

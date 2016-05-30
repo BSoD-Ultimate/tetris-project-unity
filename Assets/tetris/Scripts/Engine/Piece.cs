@@ -157,10 +157,10 @@ namespace TetrisEngine
                 if (CurrentState == State.Fixing)
                 {
                     m_FixCountdownResetCount++;
-                }
-                if (TryMoveDown())
-                {
-                    CurrentState = State.Unfixed;
+                    if (TryMoveDown())
+                    {
+                        CurrentState = State.Unfixed;
+                    }
                 }
                 return true;
             }
@@ -188,10 +188,10 @@ namespace TetrisEngine
                 if (CurrentState == State.Fixing)
                 {
                     m_FixCountdownResetCount++;
-                }
-                if (TryMoveDown())
-                {
-                    CurrentState = State.Unfixed;
+                    if (TryMoveDown())
+                    {
+                        CurrentState = State.Unfixed;
+                    }
                 }
                 return true;
             }
@@ -310,11 +310,12 @@ namespace TetrisEngine
                 if (CurrentState == State.Fixing)
                 {
                     m_FixCountdownResetCount++;
+                    if (TryMoveDown())
+                    {
+                        CurrentState = State.Unfixed;
+                    }
                 }
-                if (TryMoveDown())
-                {
-                    CurrentState = State.Unfixed;
-                }
+
                 return true;
             }
 
@@ -335,11 +336,12 @@ namespace TetrisEngine
                     if (CurrentState == State.Fixing)
                     {
                         m_FixCountdownResetCount++;
+                        if (TryMoveDown())
+                        {
+                            CurrentState = State.Unfixed;
+                        }
                     }
-                    if (TryMoveDown())
-                    {
-                        CurrentState = State.Unfixed;
-                    }
+
                     return true;
                 }
             }
@@ -374,10 +376,10 @@ namespace TetrisEngine
                 if (CurrentState == State.Fixing)
                 {
                     m_FixCountdownResetCount++;
-                }
-                if (TryMoveDown())
-                {
-                    CurrentState = State.Unfixed;
+                    if (TryMoveDown())
+                    {
+                        CurrentState = State.Unfixed;
+                    }
                 }
                 return true;
             }
@@ -399,10 +401,10 @@ namespace TetrisEngine
                     if (CurrentState == State.Fixing)
                     {
                         m_FixCountdownResetCount++;
-                    }
-                    if (TryMoveDown())
-                    {
-                        CurrentState = State.Unfixed;
+                        if (TryMoveDown())
+                        {
+                            CurrentState = State.Unfixed;
+                        }
                     }
                     return true;
                 }
