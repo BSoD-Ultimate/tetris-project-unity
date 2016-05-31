@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
+using System.Diagnostics;
 
 namespace TetrisEngine
 {
@@ -126,9 +127,9 @@ namespace TetrisEngine
         public bool CollapseRows()
         {
             // find empty rows from top to bottom
-            for (int row = m_Height-2; row >=0; row--)
+            for (int row = m_Height - 2; row >= 0; row--)
             {
-                if(IsRowEmpty(row))
+                if (IsRowEmpty(row))
                 {
                     // move down upper blocks
                     for (int rowID = row; rowID < m_Height - 1; rowID++)
@@ -145,13 +146,63 @@ namespace TetrisEngine
         // clear all blocks.
         public void Clear()
         {
-            for(int i=0;i<m_Height;i++)
+            for (int i = 0; i < m_Height; i++)
             {
-                for(int j=0;j<m_Width;j++)
+                for (int j = 0; j < m_Width; j++)
                 {
                     m_field[i, j] = null;
                 }
             }
+        }
+
+        // Add garbage rows in the field
+        public void AddGarbageRow(int rowCount, bool[] garbageRowStyle = null)
+        {
+            // out of range
+            if (rowCount > m_Height)
+            {
+                rowCount = m_Height;
+            }
+            BlockChip[,] newField = new BlockChip[m_Height, m_Width];
+            // copy original field data to new field
+            for (int i = 0; i < m_Height - rowCount; i++)
+            {
+                for (int j = 0; j < m_Width; j++)
+                {
+                    newField[i + rowCount, j] = m_field[i, j];
+                }
+            }
+
+            // make garbage row
+            if (garbageRowStyle != null)
+            {
+                Debug.Assert(garbageRowStyle.Length == this.Width);
+            }
+            else
+            {
+                // default
+                garbageRowStyle = new bool[m_Width];
+                for(int i=0;i<m_Width;i++)
+                {
+                    garbageRowStyle[i] = true;
+                }
+                Random random = new Random();
+                garbageRowStyle[random.Next(0, 10)] = false;
+            }
+
+            // fill garbage row
+            for(int i=0;i<rowCount;i++)
+            {
+                for(int j=0;j<m_Width;j++)
+                {
+                    if(garbageRowStyle[j])
+                    {
+                        newField[i, j] = new BlockChip();
+                        newField[i, j].Type = BlockType.Grey;
+                    }
+                }
+            }
+            m_field = newField;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
@@ -25,7 +26,11 @@ public class GameManager : MonoBehaviour
     public GameObject[] m_NextPieceShow;
     public GameObject m_HoldPieceShow;
 
-    public GameObject m_GameOverText;
+    // UI objects show game info
+    public GameObject m_TextPendingLines;
+    public GameObject m_TextRowClearType;
+    public GameObject m_TextBackToBack;
+    public GameObject m_TextComboCount;
 
     // blocks on the scene
     private GameObject[,] m_BlockView;
@@ -42,6 +47,7 @@ public class GameManager : MonoBehaviour
     private Piece m_HoldPiece = null;
     private Queue<Piece> m_IncomingPieceQueue;
     private BlockRandomizer m_Randomizer;
+    private int m_PendingLines;
     #endregion
 
     #region properties
@@ -114,6 +120,7 @@ public class GameManager : MonoBehaviour
             return isHintShown;
         }
     }
+
     private FrameWaitCoroutine coWaitLockDelay;
     #endregion
 
@@ -180,7 +187,7 @@ public class GameManager : MonoBehaviour
         AutoShiftDelay = 14;
         AutoShiftInterval = 1;
         SoftDropInterval = 1;
-        PieceDropInternalGravity = 1310720;
+        PieceDropInternalGravity = 1024;
         PieceSpawnDelay = 24;
         PieceLockDelay = 30;
         LineClearDelay = 30;
@@ -220,8 +227,8 @@ public class GameManager : MonoBehaviour
         // show next piece on screen
         UpdatePiecePreview();
 
-        // start game coroutine 
 
+        // start game coroutine 
         StartCoroutine(HandleGame());
         inputManager.StartHandleInput();
 
@@ -307,6 +314,10 @@ public class GameManager : MonoBehaviour
                 m_BlockHint[i].transform.position = newPosition;
             }
         }
+    }
+    public void UpdatePendingLines()
+    {
+        m_TextPendingLines.GetComponent<Text>().text = m_PendingLines.ToString();
     }
 
     public Piece GetCurrentPiece()
@@ -652,6 +663,13 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    // add garbage row
+    public void DoAddGarbageRow(int rowCount)
+    {
+        m_PendingLines += rowCount;
+        UpdatePendingLines();
+    }
+
     // Main logic of the game
     IEnumerator HandleGame()
     {
@@ -748,6 +766,15 @@ public class GameManager : MonoBehaviour
             }
 
             yield return null;
+
+            // check pending lines
+            if (m_PendingLines > 0)
+            {
+                m_Field.AddGarbageRow(m_PendingLines);
+                m_PendingLines = 0;
+                UpdatePendingLines();
+                UpdateField();
+            }
         }
     }
 
