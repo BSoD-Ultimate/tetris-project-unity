@@ -4,7 +4,6 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using TetrisEngine;
-using System.Threading;
 
 public class GameManager : MonoBehaviour
 {
@@ -47,7 +46,7 @@ public class GameManager : MonoBehaviour
     private Piece m_HoldPiece = null;
     private Queue<Piece> m_IncomingPieceQueue;
     private BlockRandomizer m_Randomizer;
-    private int m_PendingLines;
+    private Queue<int> m_PendingLinesQueue;
     #endregion
 
     #region properties
@@ -123,6 +122,7 @@ public class GameManager : MonoBehaviour
 
     private FrameWaitCoroutine coWaitLockDelay;
     #endregion
+    public bool IsGameRunning { get; private set; }
 
     // a wrapper controls block's animation
     class BlockAnimation
@@ -203,6 +203,11 @@ public class GameManager : MonoBehaviour
     // Start the game.
     public void StartGame()
     {
+
+        // set flag 
+        if (IsGameRunning)
+            return;
+        IsGameRunning = true;
         // initialize engine
 
         // field
@@ -216,9 +221,13 @@ public class GameManager : MonoBehaviour
         {
             m_IncomingPieceQueue.Enqueue(m_Randomizer.GetNextPiece(m_Field));
         }
+        // pending lines
+        m_PendingLinesQueue = new Queue<int>();
+
+        // line clear
+        LineClearEvent.ComboCount = 0;
 
         // initialize game objects.
-
         m_BlockView = new GameObject[m_Field.Height, m_Field.Width];
 
         coWaitLockDelay = new FrameWaitCoroutine(this);
@@ -230,7 +239,7 @@ public class GameManager : MonoBehaviour
 
         // start game coroutine 
         StartCoroutine(HandleGame());
-        inputManager.StartHandleInput();
+        
 
     }
 
@@ -317,7 +326,13 @@ public class GameManager : MonoBehaviour
     }
     public void UpdatePendingLines()
     {
-        m_TextPendingLines.GetComponent<Text>().text = m_PendingLines.ToString();
+        //m_TextPendingLines.GetComponent<Text>().text = m_PendingLines.ToString();
+        int rowTotalCount = 0;
+        for (int i = 0; i < m_PendingLinesQueue.Count; i++)
+        {
+            rowTotalCount += m_PendingLinesQueue.ElementAt(i);
+        }
+        UIManager.instance.SetPendingLines(rowTotalCount);
     }
 
     public Piece GetCurrentPiece()
@@ -407,15 +422,22 @@ public class GameManager : MonoBehaviour
         m_Field.Clear();
         UpdatePiecePreview();
 
-        // show game over on screen
+        // show game over text on screen
 
-        //GameObject gameOver = (GameObject)Instantiate(m_GameOverText, new Vector3(4.5f, 9.5f), Quaternion.identity);
-        //yield return new WaitForSeconds(2f);
-        //Destroy(gameOver);
-
+        UIManager.instance.SetStatusText("Game Over");
+        UIManager.instance.SetStatusTextVisible(true);
+        yield return new WaitForSeconds(2f);
+        UIManager.instance.SetStatusTextVisible(false);
+        yield return new WaitForSeconds(2f);
 
         // reset game over flags
         isGameOver = false;
+        IsGameRunning = false;
+
+        yield return null;
+
+        // reset ui state
+        UIManager.instance.SetIdleState();
         yield return null;
     }
 
@@ -443,6 +465,10 @@ public class GameManager : MonoBehaviour
 
     public bool DoMoveLeft()
     {
+        if(m_CurrentPiece == null)
+        {
+            return false;
+        }
         if (isPieceSpawned && m_CurrentPiece.CurrentState != Piece.State.Fixed)
         {
             bool success = m_CurrentPiece.MoveLeft();
@@ -458,6 +484,10 @@ public class GameManager : MonoBehaviour
     }
     public bool DoMoveRight()
     {
+        if (m_CurrentPiece == null)
+        {
+            return false;
+        }
         if (isPieceSpawned && m_CurrentPiece.CurrentState != Piece.State.Fixed)
         {
             bool success = m_CurrentPiece.MoveRight();
@@ -473,6 +503,10 @@ public class GameManager : MonoBehaviour
     }
     public bool DoSoftDrop()
     {
+        if (m_CurrentPiece == null)
+        {
+            return false;
+        }
         if (isPieceSpawned && m_CurrentPiece.CurrentState != Piece.State.Fixed)
         {
             bool success = m_CurrentPiece.MoveDown();
@@ -487,6 +521,10 @@ public class GameManager : MonoBehaviour
     }
     public bool DoHardDrop()
     {
+        if (m_CurrentPiece == null)
+        {
+            return false;
+        }
         if (isPieceSpawned && m_CurrentPiece.CurrentState != Piece.State.Fixed)
         {
             m_CurrentPiece.HardDrop();
@@ -523,6 +561,10 @@ public class GameManager : MonoBehaviour
     }
     public bool DoRotateCW()
     {
+        if (m_CurrentPiece == null)
+        {
+            return false;
+        }
         if (!isPieceSpawned)
         {
             // initial rotation
@@ -556,6 +598,10 @@ public class GameManager : MonoBehaviour
 
     public bool DoRotateCCW()
     {
+        if (m_CurrentPiece == null)
+        {
+            return false;
+        }
         if (!isPieceSpawned)
         {
             // initial rotation
@@ -587,6 +633,10 @@ public class GameManager : MonoBehaviour
     }
     public bool DoHoldPiece()
     {
+        if (m_CurrentPiece == null)
+        {
+            return false;
+        }
         if (isHoldPerformed)
         {
             return false;
@@ -663,16 +713,53 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    // add garbage row
-    public void DoAddGarbageRow(int rowCount)
+    // add pending lines
+    public void DoAddPendingLines(int rowCount)
     {
-        m_PendingLines += rowCount;
+        m_PendingLinesQueue.Enqueue(rowCount);
+        UpdatePendingLines();
+    }
+    // decrease pending lines
+    public void DoDecreasePendingLines(int rowCount)
+    {
+        while (rowCount > 0 && m_PendingLinesQueue.Count > 0)
+        {
+            int pendingLine = m_PendingLinesQueue.Peek();
+            int rowRemaining = -(pendingLine - rowCount);
+            if (rowRemaining >= 0)
+            {
+                m_PendingLinesQueue.Dequeue();
+            }
+            else
+            {
+                //m_PendingLinesQueue.Peek() = pendingLine - rowCount;
+                int[] arr = m_PendingLinesQueue.ToArray();
+                arr[0] = pendingLine - rowCount;
+                Queue<int> newQueue = new Queue<int>(arr);
+                m_PendingLinesQueue = newQueue;
+            }
+            rowCount = rowRemaining;
+        }
         UpdatePendingLines();
     }
 
     // Main logic of the game
     IEnumerator HandleGame()
     {
+        // before game runs
+        UIManager.instance.SetStatusTextVisible(true);
+
+        UIManager.instance.SetStatusText("READY");
+        yield return new WaitForSeconds(0.5f);
+        UIManager.instance.SetStatusText("GO!");
+        yield return new WaitForSeconds(0.5f);
+
+        UIManager.instance.SetStatusTextVisible(false);
+
+        yield return null;
+
+        // game running
+        inputManager.StartHandleInput();
         while (true)
         {
             // reset flags
@@ -742,7 +829,6 @@ public class GameManager : MonoBehaviour
                             m_BlockCurrentPiece[i].GetComponent<SpriteRenderer>().color = new Color32(192, 192, 192, 255);
                         }
 
-
                         // destroy hint blocks
                         if (isHintShown)
                         {
@@ -756,6 +842,7 @@ public class GameManager : MonoBehaviour
                 }
                 yield return null;
             }
+
             // now the piece is fixed, we check if related rows can be cleared
             bool isLineCleared = CheckRowClear();
             // arrange the field
@@ -767,11 +854,14 @@ public class GameManager : MonoBehaviour
 
             yield return null;
 
-            // check pending lines
-            if (m_PendingLines > 0)
+            // check pending lines and add garbage row on field
+            if (m_PendingLinesQueue.Count > 0)
             {
-                m_Field.AddGarbageRow(m_PendingLines);
-                m_PendingLines = 0;
+                while (m_PendingLinesQueue.Count > 0)
+                {
+                    int garbageRowCount = m_PendingLinesQueue.Dequeue();
+                    m_Field.AddGarbageRow(garbageRowCount);
+                }
                 UpdatePendingLines();
                 UpdateField();
             }
@@ -792,7 +882,7 @@ public class GameManager : MonoBehaviour
                 rowID.Add(point.y);
             }
         }
-        // check related rows can be cleared
+        // check if related rows can be cleared
         foreach (int row in rowID)
         {
             if (m_Field.CheckRow(row))
@@ -812,9 +902,15 @@ public class GameManager : MonoBehaviour
         if (isRowCleared)
         {
             LineClearEvent clearEvent = LineClearEvent.GetLineClearEvent(rowCount, m_CurrentPiece);
-            //Debug.Log("");
-            Debug.Assert(clearEvent != null);
+            // combo 
+            LineClearEvent.ComboCount++;
             Debug.Log(clearEvent.GetFullTypeString());
+            // show on screen
+            UIManager.instance.ShowRowClearType(clearEvent);
+        }
+        else
+        {
+            LineClearEvent.ComboCount = 0;
         }
 
         // clear row on field

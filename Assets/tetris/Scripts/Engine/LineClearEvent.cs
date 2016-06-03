@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace TetrisEngine
 {
-    class LineClearEvent
+    public class LineClearEvent
     {
         private static LineClearEvent m_PrevLineClearEvent;
         public static int ComboCount { get; set; }
@@ -20,7 +20,7 @@ namespace TetrisEngine
         public const string tSpinTriple = "T-Spin Triple ";
         public const string backToBack = "Back-to-Back";
 
-        public bool isBackToBack { get; protected set; }
+        public bool IsBackToBack { get; protected set; }
         protected int basicScore = 0;
         protected int basicLineAttack = 0;
         protected int basicPendingLinesDecrement = 0;
@@ -31,19 +31,19 @@ namespace TetrisEngine
 
         public LineClearEvent()
         {
-            isBackToBack = false;
+            IsBackToBack = false;
         }
 
         public int GetScore()
         {
             int score = basicScore;
-            score = isBackToBack ? score * 3 / 2 : score;
+            score = IsBackToBack ? score * 3 / 2 : score;
             return score + comboScoreReward[ComboCount >= comboScoreReward.Length ? comboScoreReward.Length - 1 : ComboCount];
         }
         public int GetAttackLines()
         {
             int lines = basicLineAttack;
-            lines = isBackToBack ? lines * 3 / 2 : lines;
+            lines = IsBackToBack ? lines * 3 / 2 : lines;
             return lines + comboLineAttackReward[ComboCount >= comboLineAttackReward.Length ? comboLineAttackReward.Length - 1 : ComboCount];
         }
         public int GetPendingLinesDecrement()
@@ -136,7 +136,7 @@ namespace TetrisEngine
                 lineClearEvent.GetTypeString() == tSpinDouble ||
                 lineClearEvent.GetTypeString() == tSpinTriple) && isBackToBack)
             {
-                lineClearEvent.isBackToBack = true;
+                lineClearEvent.IsBackToBack = true;
             }
 
             // record current line clear type
@@ -160,7 +160,7 @@ namespace TetrisEngine
         }
         public override string GetFullTypeString()
         {
-            return GetTypeString();
+            return GetTypeString() + (ComboCount > 1 ? (" " + ComboCount.ToString() + " Combo") : "");
         }
     }
     class DoubleLine : LineClearEvent
@@ -177,7 +177,7 @@ namespace TetrisEngine
         }
         public override string GetFullTypeString()
         {
-            return GetTypeString();
+            return GetTypeString() + (ComboCount > 1 ? (" " + ComboCount.ToString() + " Combo") : "");
         }
     }
     class TripleLine : LineClearEvent
@@ -194,7 +194,7 @@ namespace TetrisEngine
         }
         public override string GetFullTypeString()
         {
-            return GetTypeString();
+            return GetTypeString() + (ComboCount > 1 ? (" " + ComboCount.ToString() + " Combo") : "");
         }
     }
     class TetrisLine : LineClearEvent
@@ -211,7 +211,7 @@ namespace TetrisEngine
         }
         public override string GetFullTypeString()
         {
-            return isBackToBack ? GetTypeString() + backToBack : GetTypeString();
+            return IsBackToBack ? GetTypeString() + backToBack : GetTypeString() + (ComboCount > 1 ? (" " + ComboCount.ToString() + " Combo") : "");
         }
     }
     class TSpinSingle : LineClearEvent
@@ -228,7 +228,7 @@ namespace TetrisEngine
         }
         public override string GetFullTypeString()
         {
-            return isBackToBack ? GetTypeString() + backToBack : GetTypeString();
+            return IsBackToBack ? GetTypeString() + backToBack : GetTypeString() + (ComboCount > 1 ? (" " + ComboCount.ToString() + " Combo") : "");
         }
     }
     class TSpinDouble : LineClearEvent
@@ -245,7 +245,7 @@ namespace TetrisEngine
         }
         public override string GetFullTypeString()
         {
-            return isBackToBack ? GetTypeString() + backToBack : GetTypeString();
+            return IsBackToBack ? GetTypeString() + backToBack : GetTypeString() + (ComboCount > 1 ? (" " + ComboCount.ToString() + " Combo") : "");
         }
     }
     class TSpinTriple : LineClearEvent
@@ -262,7 +262,7 @@ namespace TetrisEngine
         }
         public override string GetFullTypeString()
         {
-            return isBackToBack ? GetTypeString() + backToBack : GetTypeString();
+            return IsBackToBack ? GetTypeString() + backToBack : GetTypeString() + (ComboCount > 1 ? (" " + ComboCount.ToString() + " Combo") : "");
         }
     }
 }

@@ -12,6 +12,8 @@ namespace TetrisEngine
         private int m_Width = 10;
         private int m_Height = 22;
 
+        private Random m_Random;
+
         public int Width
         {
             get
@@ -30,12 +32,14 @@ namespace TetrisEngine
         public Field()
         {
             m_field = new BlockChip[m_Height, m_Width];
+            m_Random = new Random();
         }
         public Field(int width, int height)
         {
             this.m_Width = width;
             this.m_Height = height;
             m_field = new BlockChip[height, width];
+            m_Random = new Random();
         }
         /// <summary>
         /// returns block information at specified location
@@ -186,8 +190,7 @@ namespace TetrisEngine
                 {
                     garbageRowStyle[i] = true;
                 }
-                Random random = new Random();
-                garbageRowStyle[random.Next(0, 10)] = false;
+                garbageRowStyle[m_Random.Next(0, 10)] = false;
             }
 
             // fill garbage row
