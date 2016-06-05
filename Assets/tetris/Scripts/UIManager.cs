@@ -72,18 +72,24 @@ public class UIManager : MonoBehaviour
         }
         else if (CurrentState == State.OnSelectMode)
         {
-            SetGameModePanelVisible(false);
             int currentMenuIndex = m_GameModePanel.GetComponent<GameMenu>().GetCurrentSelectionIndex();
             switch (currentMenuIndex)
             {
                 case 0:
                     // normal
+                    GameManager.instance.SetGameMode(new GamePlayMode.NormalMode());
+                    GameManager.instance.StartGame();
+                    break;
+                case 1:
+                    // advance
+                    GameManager.instance.SetGameMode(new GamePlayMode.AdvanceMode());
                     GameManager.instance.StartGame();
                     break;
                 default:
                     return;
                     break;
             }
+            SetGameModePanelVisible(false);
             CurrentState = State.OnGameRunning;
         }
     }
@@ -102,10 +108,6 @@ public class UIManager : MonoBehaviour
                 // advance
                 SetFieldFrameColor(blue);
                 break;
-            case 2:
-                // sudden
-                SetFieldFrameColor(red);
-                break;
             default:
                 SetFieldFrameColor(white);
                 break;
@@ -114,17 +116,26 @@ public class UIManager : MonoBehaviour
 
     public void SetIdleState()
     {
-        SetFieldFrameColor(white);
         SetStatusText("Press Any Button");
         SetGameModePanelVisible(false);
         ShowStatusText(-1);
+
         CurrentState = State.Idle;
     }
     public void SetSelectModeState()
     {
+        SetFieldFrameColor(white);
         StopShowStatusText();
         SetStatusTextVisible(false);
         SetGameModePanelVisible(true);
+
+        // reset ui elements
+        m_GameModePanel.GetComponent<GameMenu>().SetCurrentSelection(0);
+        SetPendingLines(0);
+        SetLines(0);
+        SetLevel(0);
+        SetScore(0);
+
         CurrentState = State.OnSelectMode;
     }
     public void SetBattleWaitState()

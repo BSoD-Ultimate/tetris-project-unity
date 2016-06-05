@@ -21,6 +21,7 @@ namespace TetrisEngine
         public const string backToBack = "Back-to-Back";
 
         public bool IsBackToBack { get; protected set; }
+        public int LineClearCount { get; protected set; }
         protected int basicScore = 0;
         protected int basicLineAttack = 0;
         protected int basicPendingLinesDecrement = 0;
@@ -138,7 +139,7 @@ namespace TetrisEngine
             {
                 lineClearEvent.IsBackToBack = true;
             }
-
+            lineClearEvent.LineClearCount = lineCount;
             // record current line clear type
             m_PrevLineClearEvent = lineClearEvent;
 

@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.3.4f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -74,12 +76,15 @@
     <Compile Include="Assets\tetris\Scripts\Engine\BlockChip.cs" />
     <Compile Include="Assets\tetris\Scripts\Engine\BlockRandomizer.cs" />
     <Compile Include="Assets\tetris\Scripts\Engine\Field.cs" />
+    <Compile Include="Assets\tetris\Scripts\GameMode\AdvanceMode.cs" />
+    <Compile Include="Assets\tetris\Scripts\GameMode\GameMode.cs" />
     <Compile Include="Assets\tetris\Scripts\Engine\LineClearEvent.cs" />
     <Compile Include="Assets\tetris\Scripts\Engine\Piece.cs" />
     <Compile Include="Assets\tetris\Scripts\Engine\Point.cs" />
     <Compile Include="Assets\tetris\Scripts\FrameCounter.cs" />
     <Compile Include="Assets\tetris\Scripts\FrameWaitCoroutine.cs" />
     <Compile Include="Assets\tetris\Scripts\GameManager.cs" />
+    <Compile Include="Assets\tetris\Scripts\GameMode\NormalMode.cs" />
     <Compile Include="Assets\tetris\Scripts\InputManager.cs" />
     <Compile Include="Assets\tetris\Scripts\UIManager.cs" />
   </ItemGroup>

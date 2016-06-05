@@ -35,6 +35,13 @@ public class GameMenu : MonoBehaviour
     {
         return m_MenuItems[m_CurrentSelection].GetComponent<Text>().text;
     }
+    public void SetCurrentSelection(int index)
+    {
+        Debug.Assert(index < m_MenuItems.Length);
+        m_CurrentSelection = index;
+        OnSelectionChange();
+    }
+
     void OnSelectionChange()
     {
         foreach (GameObject item in m_MenuItems)

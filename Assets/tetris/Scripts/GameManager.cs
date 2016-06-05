@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using TetrisEngine;
+using GamePlayMode;
 
 public class GameManager : MonoBehaviour
 {
@@ -47,6 +48,7 @@ public class GameManager : MonoBehaviour
     private Queue<Piece> m_IncomingPieceQueue;
     private BlockRandomizer m_Randomizer;
     private Queue<int> m_PendingLinesQueue;
+    private GameMode m_GameMode;
     #endregion
 
     #region properties
@@ -121,6 +123,7 @@ public class GameManager : MonoBehaviour
     }
 
     private FrameWaitCoroutine coWaitLockDelay;
+    private Coroutine m_coGameMode;
     #endregion
     public bool IsGameRunning { get; private set; }
 
@@ -197,16 +200,32 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (IsGameRunning)
+        {
+        	m_GameMode.OnFrameUpdated();
+        }
+    }
 
+    public void SetGameMode(GameMode mode)
+    {
+        m_GameMode = mode;
     }
 
     // Start the game.
-    public void StartGame()
+    public bool StartGame()
     {
 
         // set flag 
         if (IsGameRunning)
-            return;
+        {
+            return false;
+        }
+        // check game mode
+        if(m_GameMode == null)
+        {
+            return false;
+        }
+
         IsGameRunning = true;
         // initialize engine
 
@@ -232,6 +251,7 @@ public class GameManager : MonoBehaviour
 
         coWaitLockDelay = new FrameWaitCoroutine(this);
         coWaitLockDelay.WaitFrameCount = PieceLockDelay;
+        m_coGameMode = StartCoroutine(m_GameMode.HandleGameMode());
 
         // show next piece on screen
         UpdatePiecePreview();
@@ -239,8 +259,8 @@ public class GameManager : MonoBehaviour
 
         // start game coroutine 
         StartCoroutine(HandleGame());
-        
 
+        return true;
     }
 
     void UpdatePiecePreview()
@@ -379,7 +399,10 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game Over");
         // stop all coroutines related to game
         StopCoroutine(m_coPieceDrop);
+        StopCoroutine(m_coGameMode);
         inputManager.StopHandleInput();
+
+        m_GameMode.OnGameOver();
 
         // destroy hint blocks
         for (int i = 0; i < m_BlockHint.Length; i++)
@@ -756,6 +779,8 @@ public class GameManager : MonoBehaviour
 
         UIManager.instance.SetStatusTextVisible(false);
 
+        m_GameMode.OnGameStart();
+
         yield return null;
 
         // game running
@@ -801,6 +826,7 @@ public class GameManager : MonoBehaviour
             isPieceSpawned = true;
             // since piece has been spawned, initial rotation should not performed
             isInitialRotationPerformed = true;
+            m_GameMode.OnPieceSpawned();
 
             while (m_CurrentPiece.CurrentState != Piece.State.Fixed)
             {
@@ -843,6 +869,7 @@ public class GameManager : MonoBehaviour
                 yield return null;
             }
 
+            m_GameMode.OnPieceFixed();
             // now the piece is fixed, we check if related rows can be cleared
             bool isLineCleared = CheckRowClear();
             // arrange the field
@@ -905,6 +932,7 @@ public class GameManager : MonoBehaviour
             // combo 
             LineClearEvent.ComboCount++;
             Debug.Log(clearEvent.GetFullTypeString());
+            m_GameMode.OnLineClear(clearEvent);
             // show on screen
             UIManager.instance.ShowRowClearType(clearEvent);
         }
